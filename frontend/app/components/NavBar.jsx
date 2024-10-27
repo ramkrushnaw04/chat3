@@ -4,6 +4,7 @@ import { auth } from "@/app/firebase/config";
 
 // import icons
 import { FaSignOutAlt, FaUser } from "react-icons/fa";
+import { socketService } from "./socket/SocketService";
 
 const Navbar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -65,6 +66,7 @@ const Navbar = () => {
                                 <button
                                     onClick={() => {
                                         localStorage.removeItem('chat3UserInfo');
+                                        socketService.disconnect()
                                         signOut(auth);
                                     }}
                                     className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg flex items-center space-x-2">

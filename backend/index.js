@@ -3,9 +3,13 @@ const express = require('express')
 const { createServer } = require('http')
 const { Server } = require('socket.io')
 const cors = require('cors')
+const userSchema = require('./models/UserSchema')
+const mongoose = require('mongoose')
 const app = express()
 require('dotenv').config();
 
+// models
+const User = mongoose.model('User', userSchema)
 
 
 const server = createServer(app);
@@ -24,10 +28,15 @@ app.use(cors({
 
 
 const port = process.env.PORT
-console.log(port)
 const dbURL = process.env.DB_URL
 
 
+mongoose.connect(dbURL)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(error => console.error('Connection error:', error));
+
+
+let onlineUser = new Set()
 
 
 
@@ -35,8 +44,21 @@ const dbURL = process.env.DB_URL
 io.on('connection', socket => {
     console.log(`${socket.id} conncted`)
 
-    
+    socket.on('log-in', (data) => {
+        console.log(data)
+    })
 
+    socket.on('sign-up', async (data) => {
+        const user = User({
+            authId: data.uid
+        })
+        await user.save()
+    })
+
+    
+    socket.on('disconnect', () => {
+        console.log(`${socket.id} disconnected`)
+    })
 })
 
 

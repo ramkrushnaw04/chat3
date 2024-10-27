@@ -2,12 +2,24 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
-
+import { useEffect, useRef } from "react";
+import { socketService } from "../components/socket/SocketService";
 
 
 export default function LogIn() {
 
     const router = useRouter()
+    const socket = useRef(null)
+
+    useEffect(() => {
+        socketService.connect()
+        socket.current = socketService.getSocket()
+
+        return () => {
+
+        }
+    }, [])
+
 
     // Log in
     const logIn = (email, password) => {
@@ -16,6 +28,11 @@ export default function LogIn() {
                 const user = userCredential.user;
                 console.log("User logged in:", user);
                 localStorage.setItem('chat3UserInfo', user)
+
+                // send data to backend to save
+                socket.current.emit('log-in', user)
+
+                // redirect to main page
                 router.push('/')
 
             })

@@ -2,12 +2,23 @@
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
-
+import { socketService } from "../components/socket/SocketService";
+import { useRef, useEffect } from "react";
 
 
 export default function SignUp() {
 
     const router = useRouter()
+    const socket = useRef(null)
+
+    useEffect(() => {
+        socketService.connect()
+        socket.current = socketService.getSocket()
+
+        return () => {
+
+        }
+    }, [])
 
     
     // Sign up
@@ -17,6 +28,11 @@ export default function SignUp() {
                 const user = userCredential.user;
                 console.log("User signed up:", user);
                 localStorage.setItem('chat3UserInfo', user)
+
+                // send data to backend to save
+                socket.current.emit('sign-up', user)
+
+                // redirect to main page
                 router.push('/')
 
             })
