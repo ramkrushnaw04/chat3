@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/app/firebase/config";
+import { useRouter } from "next/navigation";
 
 // import icons
 import { FaSignOutAlt, FaUser } from "react-icons/fa";
@@ -10,6 +11,7 @@ const Navbar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
     const buttonRef = useRef(null);
+    const router = useRouter();
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -34,8 +36,8 @@ const Navbar = () => {
     }, []);
 
     return (
-        <nav className="flex items-center justify-between p-4 bg-white text-black shadow-md">
-            <div className="text-2xl font-bold text-gray-800"> Chat3 </div>
+        <nav className="flex w-screen items-center justify-between p-4 bg-white text-black shadow-md">
+            <button onClick={() => router.push('/')} className="text-2xl font-bold text-gray-800"> Chat3 </button>
 
             <div className="flex items-center space-x-2">
                 <input

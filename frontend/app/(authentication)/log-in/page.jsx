@@ -1,24 +1,27 @@
 "use client"
+
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { socketService } from "../components/socket/SocketService";
+import { socketService } from "@/app/components/socket/SocketService";
+import { useDispatch, useSelector } from "react-redux";
+import { setUserInfo } from "@/app/store/slices/userSlice";
 
 
 export default function LogIn() {
 
     const router = useRouter()
     const socket = useRef(null)
+    const dispatch = useDispatch()
+    const userInfo = useSelector((state) => state.user.userInfo)
 
     useEffect(() => {
         socketService.connect()
         socket.current = socketService.getSocket()
 
-        return () => {
-
-        }
     }, [])
+
 
 
     // Log in
@@ -26,18 +29,19 @@ export default function LogIn() {
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 const user = userCredential.user;
-                console.log("User logged in:", user);
+                // console.log("User logged in:", user);
                 localStorage.setItem('chat3UserInfo', user)
 
-                // send data to backend to save
-                socket.current.emit('log-in', user)
+                socket.current.emit('get-user-info-form-authID', { authID: user.uid }, (response) => {
+                    dispatch(setUserInfo(response))
+                })
 
                 // redirect to main page
                 router.push('/')
 
             })
             .catch((error) => {
-                console.error("Error logging in:", error.message);
+                console.error("Error logging in: ", error.message);
             });
     };
 
@@ -55,10 +59,10 @@ export default function LogIn() {
             {/* <h1 className="text-4xl font-extrabold ">Application name</h1> */}
 
 
-            <form onSubmit={handleLogin} className="flex flex-col justify-center items-center gap-5">
+            <form onSubmit={handleLogin} className="w-4/5 max-w-64 flex flex-col justify-center items-center gap-5">
                 <h1 className="font-bold text-xl">Login</h1>
-                <input className="px-5 py-3 bg-gray-300 rounded-lg" name="email" type="email" placeholder="email" />
-                <input className="px-5 py-3 bg-gray-300 rounded-lg" name="password" type="password" placeholder="password" />
+                <input className="px-5 py-3 w-full bg-gray-300 rounded-lg" name="email" type="email" placeholder="email" />
+                <input className="px-5 py-3 w-full bg-gray-300 rounded-lg" name="password" type="password" placeholder="password" />
                 <button className="px-5 py-3 text-white rounded-lg bg-blue-700" type="submit" >Login</button>
                 <button onClick={() => router.push('/sign-up')} className="text-xs hover:text-blue-400 underline underline-offset-2">Dont have an acocunt? Sign up here.</button>
             </form>
