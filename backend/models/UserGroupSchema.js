@@ -20,6 +20,10 @@ const userGroupSchema = Schema({
 })
 
 
+userGroupSchema.statics.alreadyExists = async function (userIDs) {
+    
+}
+
 
 userGroupSchema.statics.getAllUserGroups = async function (userID) {
     const groups = await this.find({userID})

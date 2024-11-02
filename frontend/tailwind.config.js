@@ -13,6 +13,9 @@ module.exports = {
       },
       height: {
         '100svh': '100svh'
+      },
+      screens: {
+        'mobile': '425px'
       }
     },
   },

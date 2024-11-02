@@ -46,7 +46,11 @@ export default function Chats() {
         const myAuthID = userInfo._id
         const otherID = user._id
 
-        socket.current.emit('create-chat', { userIDs: [myAuthID, otherID] })
+        socket.current.emit('create-chat', { userIDs: [myAuthID, otherID] }, (response) => {
+            if(response.success) {
+                router.push('/')
+            }
+        })
     };
 
     return (

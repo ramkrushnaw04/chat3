@@ -4,7 +4,7 @@ import { auth } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import { socketService } from "../../components/socket/SocketService";
 import { useRef, useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUserInfo } from "@/app/store/slices/userSlice";
 
 
@@ -13,13 +13,14 @@ export default function SignUp() {
     const router = useRouter()
     const socket = useRef(null)
     const dispatch = useDispatch()
+    const userInfo = useSelector((state) => state.user.userInfo)
+
 
     useEffect(() => {
         socketService.connect()
         socket.current = socketService.getSocket()
 
     }, [])
-
     
     // Sign up
     const signUp = async (email, password, firstName, lastName) => {

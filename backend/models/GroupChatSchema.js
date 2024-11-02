@@ -8,6 +8,10 @@ const User = model('User', UserSchema)
 const groupSchema = Schema({
     name: String,
     profile: String,
+    type: {
+        type: String,
+        default: 'private'
+    },
     members: [{
         
         userID: {

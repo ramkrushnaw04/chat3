@@ -13,7 +13,6 @@ export default function LogIn() {
 
     const router = useRouter()
     const socket = useRef(null)
-    const dispatch = useDispatch()
     const userInfo = useSelector((state) => state.user.userInfo)
 
     useEffect(() => {
@@ -23,7 +22,6 @@ export default function LogIn() {
     }, [])
 
 
-
     // Log in
     const logIn = (email, password) => {
         signInWithEmailAndPassword(auth, email, password)
@@ -31,10 +29,6 @@ export default function LogIn() {
                 const user = userCredential.user;
                 // console.log("User logged in:", user);
                 localStorage.setItem('chat3UserInfo', user)
-
-                socket.current.emit('get-user-info-form-authID', { authID: user.uid }, (response) => {
-                    dispatch(setUserInfo(response))
-                })
 
                 // redirect to main page
                 router.push('/')

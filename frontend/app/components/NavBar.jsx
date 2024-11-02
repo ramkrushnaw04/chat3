@@ -36,15 +36,11 @@ const Navbar = () => {
     }, []);
 
     return (
-        <nav className="flex w-screen items-center justify-between p-4 bg-white text-black shadow-md">
+        <nav className="flex relative w-full items-center justify-between p-4 bg-white text-black ">
             <button onClick={() => router.push('/')} className="text-2xl font-bold text-gray-800"> Chat3 </button>
 
-            <div className="flex items-center space-x-2">
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    className="p-2 w-32 bg-gray-200 text-black border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
-                />
+            <div className=" flex items-center space-x-2">
+                
 
                 <button
                     ref={buttonRef}
@@ -56,7 +52,7 @@ const Navbar = () => {
                 {menuOpen && (
                     <div
                         ref={menuRef}
-                        className="absolute top-20 right-4 mt-2 w-40 bg-white shadow-lg rounded-lg p-2">
+                        className="fixed top-20 right-4 mt-2 w-40 bg-white shadow-lg rounded-lg p-2">
                         <ul className="space-y-2">
                             <li>
                                 <button className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg flex items-center space-x-2">
