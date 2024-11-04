@@ -68,11 +68,12 @@ io.on('connection', socket => {
     socket.on('create-chat', async (data, callback) => {
         const members = data.userIDs.map(item => ({ userID: item }));
         const groupChat = new GroupChat({
-            name: 'groupName',
+            name: data.name,
             members,
+            // profile: data.profile,
             profile: 'groupProfile',
+            type: data.type
         });
-
         const groupPromises = members.map(user => {
             const userGroup = new UserGroup({
                 userID: user.userID,
@@ -80,13 +81,13 @@ io.on('connection', socket => {
             });
             return userGroup.save();
         });
-
         await Promise.all(groupPromises);
         await groupChat.save();
         callback({success: true, groupID: groupChat._id});
     });
 
-    socket.on('message', ({ room, message }) => {
+    socket.on('message', ({ room, message }, callback) => {
+        callback({delivered: true})
         socket.to(room).emit('message', message);
     });
 
@@ -96,7 +97,6 @@ io.on('connection', socket => {
             // join the user to each chat (room) they are a part of
             const roomName = String(group._id)
             socket.join(roomName);
-
             socket.to(roomName).emit('user-online', {userID: data.userID})
         });
         callback(searchedGroups);
@@ -110,7 +110,7 @@ io.on('connection', socket => {
         searchedGroups.forEach(group => {
             // check for each member if its online
             for (const item of group.members) {
-                const memberID = String(item.userID._id)
+                const memberID = String(item.userID?._id)
                 if(onlineUsers[memberID]) {
                     users.add(memberID)
                 }
@@ -122,6 +122,7 @@ io.on('connection', socket => {
 
     socket.on('user-typing', async (data) => {
         socket.to(data.groupID).emit('user-typing', data)
+        // console.log('typing...', data)
     })
 
 
@@ -129,7 +130,7 @@ io.on('connection', socket => {
 
     socket.on('disconnect', async () => {
         console.log(`${socket.id} disconnected`);
-        
+
         const entries = Object.entries(onlineUsers)
 
         // send message to all the conencted users that the user is offline

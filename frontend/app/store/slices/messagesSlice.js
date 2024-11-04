@@ -28,11 +28,24 @@ export const messagesSlice = createSlice({
                 state[chatID] = [...state[chatID], message]
             }
         },
-        
+        addNewPendingMessage: (state, action) => {
+            const {chatID, message} = action.payload
+
+            if(!state.pendingMessages[chatID]) {
+                state.pendingMessages[chatID] = [message]
+            }
+            else {
+                state.pendingMessages[chatID] = [...state.pendingMessages[chatID], message]
+            }
+        },
+        resetPendingMessages: (state, action) => {
+            const {chatID} = action.payload
+            state.pendingMessages[chatID] = []
+        }
     }
 })
 
 
-export const { setMessages, addNewMessage } = messagesSlice.actions
+export const { setMessages, addNewMessage, addNewPendingMessage, resetPendingMessages } = messagesSlice.actions
 
 export default messagesSlice.reducer

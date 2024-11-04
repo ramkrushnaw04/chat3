@@ -11,6 +11,7 @@ const Chats = ({ style, activeChatHandler }) => {
     const userInfo = useSelector((state) => state.user.userInfo);
     const [chats, setChats] = useState([]);
     const [showOptions, setShowOptions] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const router = useRouter();
 
     const toggleOptions = () => setShowOptions(!showOptions);
@@ -31,12 +32,36 @@ const Chats = ({ style, activeChatHandler }) => {
         activeChatHandler(data);
     };
 
+    // Filter chats based on search query
+    const filteredChats = chats.filter(chat => {
+        let otherUser;
+
+        if (chat.type === 'private') {
+            const filtered = chat.members.filter(
+                (item) => item.userID?._id !== userInfo?._id
+            );
+            otherUser = filtered[0]?.userID;
+        } else {
+            return chat.name.toLowerCase().includes(searchQuery.toLowerCase())
+        }
+
+        // If otherUser exists, check if their name matches the search query
+        if (otherUser) {
+            const fullName = `${otherUser.firstName} ${otherUser.lastName}`.toLowerCase();
+            return fullName.includes(searchQuery.toLowerCase());
+        }
+
+        return false;
+    });
+
     return (
         <div className="flex flex-col w-full flex-1 relative" style={style}>
             <input
                 type="text"
                 placeholder="Search People..."
                 className="px-3 w-auto m-4 bg-gray-200 text-black border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
             />
 
             {/* Button to add chat and create group chats */}
@@ -66,7 +91,7 @@ const Chats = ({ style, activeChatHandler }) => {
             )}
 
             <div className="px-4 gap-3 flex flex-col overflow-y-scroll">
-                {userInfo && chats.map((chat) => {
+                {userInfo && filteredChats.map((chat) => {
                     let otherUser;
 
                     if (chat.type === 'private') {
@@ -79,8 +104,9 @@ const Chats = ({ style, activeChatHandler }) => {
                             otherUser.type = 'private';
                             otherUser.chatID = chat._id
                         }
-                    } 
-                    else otherUser = chat;
+                    } else {
+                        otherUser = chat;
+                    }
 
                     return otherUser ? (
                         <ChatsItem

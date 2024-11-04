@@ -6,7 +6,7 @@ import ChatHeaderGroup from './group/ChatHeaderGroup';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
 import NoChatScreen from './NoChatScreen';
-import { addNewMessage, setMessages } from '@/app/store/slices/messagesSlice';
+import { addNewMessage, setMessages, addNewPendingMessage, resetPendingMessages } from '@/app/store/slices/messagesSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { socketService } from '../socket/SocketService';
 import { addOnlineUser, removeOnlineUser } from '@/app/store/slices/onlineUsersSlice';
@@ -14,13 +14,12 @@ import { addOnlineUser, removeOnlineUser } from '@/app/store/slices/onlineUsersS
 const ChatBox = ({ activeChat, activeChatHandler }) => {
     const [chatMessages, setChatMessages] = useState([])
     const userInfo = useSelector((state) => state.user.userInfo)
-    const onlineUsers = useSelector((state) => state.onlineUsers)
     const storedMessages = useSelector((state) => state.messages)
     const socket = useRef(null)
     const dispatch = useDispatch()
 
     function receiveMessage(data) {
-        // console.log('received new message: ', data)
+        console.log('received new message: ', data)
         dispatch(addNewMessage({ chatID: data.chatID, message: data }))
     }
 
@@ -74,7 +73,13 @@ const ChatBox = ({ activeChat, activeChatHandler }) => {
     // to update messages of active chat
     useEffect(() => {
         if (!activeChat || !storedMessages) return
-        setChatMessages(storedMessages[activeChat.chatID])
+
+        // for private chat
+        if(activeChat.type == 'private')    
+            setChatMessages(storedMessages[activeChat.chatID])
+        // for group chat
+        else if(activeChat.type == 'group')    
+            setChatMessages(storedMessages[activeChat._id])
 
     }, [activeChat, storedMessages])
 
@@ -86,7 +91,7 @@ const ChatBox = ({ activeChat, activeChatHandler }) => {
                     <ChatHeaderGroup data={activeChat} activeChatHandler={activeChatHandler} />     
                 }
                 <ChatMessages messages={chatMessages} />
-                <ChatInput activeChatID={activeChat.chatID} />
+                <ChatInput activeChatID={activeChat.type == 'private' ? activeChat.chatID : activeChat._id} />
             </>) : <NoChatScreen />
         }</div>
     );

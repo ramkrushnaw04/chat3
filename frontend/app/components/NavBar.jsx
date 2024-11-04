@@ -55,7 +55,11 @@ const Navbar = () => {
                         className="fixed top-20 right-4 mt-2 w-40 bg-white shadow-lg rounded-lg p-2">
                         <ul className="space-y-2">
                             <li>
-                                <button className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg flex items-center space-x-2">
+                                <button
+                                    onClick={() => {
+                                        router.push('/profile')
+                                    }}
+                                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg flex items-center space-x-2">
                                     <FaUser />
                                     <span>Profile</span>
                                 </button>

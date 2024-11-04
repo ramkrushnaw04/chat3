@@ -1,48 +1,109 @@
-// components/ChatHeader.js
-import React, {useState, useEffect} from 'react';
+"use client";
+
+import React, { useState, useEffect, useRef } from 'react';
 import { AiOutlineArrowLeft } from "react-icons/ai";
+import { useSelector } from 'react-redux';
+import MembersPopup from './MembersPopup';
+import { socketService } from '../../socket/SocketService';
 
 const ChatHeaderGroup = ({ data, activeChatHandler }) => {
-
-    const mobileWidth = 768
-    const [mobile, setMobile] = useState(window.innerWidth < mobileWidth ? true : false)
+    const mobileWidth = 768;
+    const [mobile, setMobile] = useState(window.innerWidth < mobileWidth);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [onlineMembersInCurrentChat, setOnlineMembersInCurrentChat] = useState([]);
+    const [offlineMembersInCurrentChat, setOfflineMembersInCurrentChat] = useState([]);
+    const onlineUsers = useSelector((state) => state.onlineUsers.onlineUsers);
+    const socket = useRef(null);
+    const userInfo = useSelector((state) => state.user.userInfo);
+    const [typingUsers, setTypingUsers] = useState([]);
 
     useEffect(() => {
-        // for width calculation
         function handleResize() {
-            setMobile(window.innerWidth < mobileWidth ? true : false)
+            setMobile(window.innerWidth < mobileWidth);
         }
-        window.addEventListener('resize', handleResize)
+        window.addEventListener("resize", handleResize);
         return () => {
-            window.removeEventListener('resize', handleResize)
+            window.removeEventListener("resize", handleResize);
         };
-    }, [])
+    }, []);
+
+    useEffect(() => {
+        if (!data || !data.members) return;
+
+        const members = data.members.map(item => item.userID);
+        const onlineUsersSet = new Set(onlineUsers);
+        const onlineMembers = members.filter(item => onlineUsersSet.has(item._id));
+        const offlineMembers = members.filter(item => !onlineUsersSet.has(item._id));
+
+        setOnlineMembersInCurrentChat(onlineMembers);
+        setOfflineMembersInCurrentChat(offlineMembers);
+    }, [data, onlineUsers]);
+
+    // Receive typing status
+    useEffect(() => {
+        socketService.connect();
+        socket.current = socketService.getSocket();
+
+        socket.current.on('user-typing', response => {
+            if (response.action === 'started-typing') {
+                setTypingUsers(prev => [...prev, `${response.firstName} ${response.lastName}`]);
+            } else {
+                setTypingUsers(prev => prev.filter(item => item !== `${response.firstName} ${response.lastName}`));
+            }
+        });
+
+        return () => {
+            socket.current.off('user-typing');
+        };
+    }, [userInfo]);
+
+    const toggleModal = () => {
+        setIsModalOpen(prev => !prev);
+    };
+
+    // Format typing users message
+    const typingMessage = typingUsers.length > 0 
+        ? `${typingUsers.join(', ')} ${typingUsers.length > 1 ? 'are' : 'is'} typing...` 
+        : '';
 
     return (
-
-
-        <div className="header flex items-center p-4 bg-white border-b">
-            {mobile && <button className="mr-4" onClick={() => {
-                activeChatHandler(null)
-            }} > 
-                <AiOutlineArrowLeft className="h-6 w-6 text-gray-500 hover:text-gray-700" />
-            </button>
-            }
-            <div className="relative mr-4">
-                <img src={data.profile} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
-                <span
-                    className={`absolute bottom-[-2px] right-[-2px] w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}
-                />
+        <>
+            <div
+                onClick={toggleModal}
+                className="header flex items-center p-4 bg-white border-b cursor-pointer"
+            >
+                {mobile && (
+                    <button className="mr-4" onClick={() => activeChatHandler(null)}>
+                        <AiOutlineArrowLeft className="h-6 w-6 text-gray-500 hover:text-gray-700" />
+                    </button>
+                )}
+                <div className="relative mr-4">
+                    <img src={data.profile} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
+                    <span className="absolute bottom-[-1px] right-[-1px] w-4 h-4 flex items-center justify-center border-2 border-white text-white text-xs font-bold rounded-full bg-green-500">
+                        {onlineMembersInCurrentChat.length}
+                    </span>
+                </div>
+                <div>
+                    <h2 className="font-semibold">
+                        {data.type === "private" ? `${data.firstName} ${data.lastName}` : data.name}
+                    </h2>
+                    {typingMessage && (
+                        <p className="text-green-500 text-sm">{typingMessage}</p>
+                    )}
+                </div>
             </div>
-            <div>
-                <h2 className="font-semibold">{data.type == 'private' ? `${data.firstName} ${data.lastName}` : data.name}</h2>
-                <p className="text-sm text-gray-400">
-                    last seen: 12:43
-                </p>
-            </div>
-        </div>
 
+            {/* Members Popup Component */}
+            <MembersPopup
+                isOpen={isModalOpen}
+                onClose={toggleModal}
+                onlineMembers={onlineMembersInCurrentChat}
+                offlineMembers={offlineMembersInCurrentChat}
+                mobile={mobile} // Passing mobile state to MembersPopup
+                userInfo={userInfo}
+            />
+        </>
     );
-}
+};
 
 export default ChatHeaderGroup;

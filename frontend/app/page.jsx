@@ -59,7 +59,7 @@ export default function Home() {
 
 
     return (
-        <div className="relative w-screen h-screen flex items-center bg-white text-black">
+        <div className="relative w-screen h-100svh flex items-center bg-white text-black">
 
             <div className={`left  ${mobile ? (activeChat ? 'hidden' : 'flex') : 'flex'} md:flex relative w-full md:w-1/4 h-100svh flex-col border-r-[1px] border-r-gray-200`}>
                 <Navbar />

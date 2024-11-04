@@ -1,4 +1,4 @@
-// components/Chats.js
+
 
 "use client";
 
@@ -11,6 +11,7 @@ import { socketService } from "../components/socket/SocketService";
 import SearchedUser from "../components/addChat/SearchedUser";
 import { setUserInfo } from "@/app/store/slices/userSlice";
 import { useSelector } from "react-redux";
+import Profile from "../profile/page";
 
 export default function Chats() {
     const router = useRouter();
@@ -43,10 +44,10 @@ export default function Chats() {
 
 
     const handleUserSelect = (user) => {
-        const myAuthID = userInfo._id
+        const myUserID = userInfo._id
         const otherID = user._id
 
-        socket.current.emit('create-chat', { userIDs: [myAuthID, otherID] }, (response) => {
+        socket.current.emit('create-chat', { name: 'chatName', profile: 'chatProfile', userIDs: [myUserID, otherID] }, (response) => {
             if(response.success) {
                 router.push('/')
             }
