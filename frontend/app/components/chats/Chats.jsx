@@ -106,6 +106,7 @@ const Chats = ({ style, activeChatHandler }) => {
                         }
                     } else {
                         otherUser = chat;
+                        otherUser.chatID = chat._id
                     }
 
                     return otherUser ? (

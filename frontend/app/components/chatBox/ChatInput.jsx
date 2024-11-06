@@ -27,14 +27,12 @@ const ChatInput = ({ activeChatID }) => {
             chatID: activeChatID,
             sentAt: Date.now(),
             senderID: userInfo._id,
-            ID: v4()
+            ID: v4(),
+            status: '',
+            readBy: []
         }
         hideTypingIndicator()
-        socket.current.emit('message', { room: activeChatID, message: messageData }, (response) => {
-            if(response.delivered) {
-                console.log('message recieved')
-            }
-        })
+        socket.current.emit('message', { room: activeChatID, message: messageData })
         // console.log('sending message: ', messageData)
         dispatch(addNewMessage({ chatID: activeChatID, message: messageData }))
         setMessage('')

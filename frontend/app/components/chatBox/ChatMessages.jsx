@@ -1,26 +1,19 @@
 // components/ChatMessages.js
-import React, {useEffect} from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
+import Message from '../Message';
 
 const ChatMessages = ({ messages }) => {
-    const userInfo = useSelector((state) => state.user.userInfo)
+    const userInfo = useSelector((state) => state.user.userInfo);
 
-
-    return messages ? (
+    return messages && messages.length > 0 ? (
       <div className="messages flex-1 p-4 overflow-y-auto">
         {messages.map((msg, index) => (
-          <div
+          <Message
             key={index}
-            className={`message mb-2 ${msg?.senderID === userInfo?._id ? 'text-right' : 'text-left'}`}
-          >
-            <p
-              className={`inline-block px-3 py-2 rounded ${
-                msg.senderID === userInfo._id ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
-              }`}
-            >
-              {msg.text}
-            </p>
-          </div>
+            message={msg}
+            isSentByUser={msg.senderID === userInfo._id} 
+          />
         ))}
       </div>
     ) : (
@@ -37,9 +30,7 @@ const ChatMessages = ({ messages }) => {
             <p className="text-lg font-semibold">No Messages Yet</p>
             <p className="text-sm text-gray-500 mt-2">Send a message to start a conversation.</p>
         </div>
-    )
-
-
-}
+    );
+};
 
 export default ChatMessages;

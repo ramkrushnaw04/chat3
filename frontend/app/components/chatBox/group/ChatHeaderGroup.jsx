@@ -45,7 +45,7 @@ const ChatHeaderGroup = ({ data, activeChatHandler }) => {
         socket.current = socketService.getSocket();
 
         socket.current.on('user-typing', response => {
-            if (response.action === 'started-typing') {
+            if (response.action === 'started-typing' && response.groupID == data.chatID) {
                 setTypingUsers(prev => [...prev, `${response.firstName} ${response.lastName}`]);
             } else {
                 setTypingUsers(prev => prev.filter(item => item !== `${response.firstName} ${response.lastName}`));

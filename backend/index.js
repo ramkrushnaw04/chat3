@@ -14,6 +14,7 @@ const groupChatSchema = require('./models/GroupChatSchema');
 const GroupChat = mongoose.model('GroupChat', groupChatSchema);
 
 const userGroupSchema = require('./models/UserGroupSchema');
+const { copyFileSync } = require('fs');
 const UserGroup = mongoose.model('UserGroup', userGroupSchema);
 
 const server = createServer(app);
@@ -86,10 +87,25 @@ io.on('connection', socket => {
         callback({success: true, groupID: groupChat._id});
     });
 
-    socket.on('message', ({ room, message }, callback) => {
-        callback({delivered: true})
-        socket.to(room).emit('message', message);
+    socket.on('message', ({ room, message }) => {
+        // artificial delay
+        setTimeout(() => {
+            socket.to(room).emit('message', message);
+            socket.emit('update-message', {messageID: message.ID, status: 'sent', chatID: message.chatID, type: 'sent'})
+        }, 1000);
     });
+
+    socket.on('messages-read', ({chatID, pendingMessagesIDs, userID}) => {
+        // we are sending message sent only to the clients (if online) who sent the message
+        // because for the other clients this info is useless
+        for (const {messageID, senderID} of pendingMessagesIDs) {
+            if(!onlineUsers[senderID]) return
+            const socketID = String(onlineUsers[senderID])
+            console.log('sent to: ', socketID, ' messageID: ', messageID)
+            // io.to(socketID).emit('messages-read', {chatID, messageID})
+            io.to(socketID).emit('update-message', {chatID, messageID, type: 'read', userID})
+        }
+    })
 
     socket.on('get-all-groupChats', async (data, callback) => {
         const searchedGroups = await UserGroup.getAllUserGroups(data.userID);
@@ -125,8 +141,6 @@ io.on('connection', socket => {
         // console.log('typing...', data)
     })
 
-
-    // socket.on('get-all-online')
 
     socket.on('disconnect', async () => {
         console.log(`${socket.id} disconnected`);

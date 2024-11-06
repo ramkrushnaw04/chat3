@@ -34,7 +34,7 @@ const ChatHeaderPrivate = ({ data, activeChatHandler }) => {
         socket.current = socketService.getSocket()
 
         socket.current.on('user-typing', response => {
-            if(response.userID == data._id) {
+            if(response.userID == data._id && response.groupID == data.chatID) {
                 setIsTyping(response.action == 'started-typing')
             }
         })
