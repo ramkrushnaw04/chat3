@@ -10,6 +10,8 @@ import { addNewMessage, addNewPendingMessage, addMultipleNewMessage, resetPendin
 import { useSelector, useDispatch } from 'react-redux';
 import { socketService } from '../socket/SocketService';
 import { addOnlineUser, removeOnlineUser } from '@/app/store/slices/onlineUsersSlice';
+import { addLastOnlineStatus, removeLastOnlineStatus } from '@/app/store/slices/contactsSlice';
+
 
 const ChatBox = ({ activeChat, activeChatHandler }) => {
     const [chatMessages, setChatMessages] = useState([])
@@ -17,7 +19,6 @@ const ChatBox = ({ activeChat, activeChatHandler }) => {
     const storedMessages = useSelector((state) => state.messages)
     const socket = useRef(null)
     const dispatch = useDispatch()
-    const [messagesUpdateBatch, setMessagesUpdateBatch] = useState([])
 
     useEffect(() => {
         socketService.connect()
@@ -25,11 +26,20 @@ const ChatBox = ({ activeChat, activeChatHandler }) => {
 
 
         function receiveMessage(data) {
-            // if the message in not sent in current chat, add it to pending messages
             const chatID = activeChat ? activeChat.chatID : null
+            // if message is sent to current chat, add current user to readBy of the message
             if (chatID == data.chatID) {
-                dispatch(addNewMessage({ chatID: data.chatID, message: data }))
-            } else {
+                // sent message to backend that this message is read
+                const messagesReadIDs = [{messageID: data.ID, senderID: data.senderID}]
+                socket.current.emit('messages-read', { chatID: activeChat.chatID, pendingMessagesIDs: messagesReadIDs, userID: userInfo._id })
+
+                dispatch(addNewMessage({ 
+                    chatID: data.chatID, 
+                    message: data
+                }))
+            } 
+            // if the message in not sent in current chat, add it to pending messages
+            else {
                 dispatch(addNewPendingMessage({ chatID: data.chatID, message: data }))
             }
 
@@ -37,24 +47,25 @@ const ChatBox = ({ activeChat, activeChatHandler }) => {
 
         function handleNewOnlineUser(data) {
             // console.log('new user is online', data)
-            dispatch(addOnlineUser(data))
+            dispatch(addOnlineUser({userID: data.userID}))
+            dispatch(addLastOnlineStatus(data))
         }
 
         function handleNewOfflineUser(data) {
             // console.log('user went offline: ', data)
-            dispatch(removeOnlineUser(data))
+            dispatch(removeOnlineUser({userID: data.userID}))
+            // dispatch(removeLastOnlineStatus({userID: data.userID}))
+            dispatch(addLastOnlineStatus({userID: data.userID, lastOnline: data.lastOnline}))
         }
 
         socket.current.on('message', receiveMessage)
         socket.current.on('user-online', handleNewOnlineUser)
         socket.current.on('user-offline', handleNewOfflineUser)
-        socket.current.on('messages-read', handleMessagesRead)
 
         return () => {
             socket.current.off('message', receiveMessage)
             socket.current.off('user-online', handleNewOnlineUser)
             socket.current.off('user-offline', handleNewOfflineUser)
-            socket.current.off('messages-read', handleMessagesRead)
         }
     }, [activeChat])
 
@@ -76,7 +87,6 @@ const ChatBox = ({ activeChat, activeChatHandler }) => {
             }
             // when message is seen by a client
             else if (data.type == 'read') { // data: {chatID, messageID, type, senderID}
-                // console.log(data)
                 const oldMessages = storedMessages[data.chatID] || []
                 const newMessages = oldMessages.map(item => {
                     if(item.ID == data.messageID) {
@@ -123,7 +133,7 @@ const ChatBox = ({ activeChat, activeChatHandler }) => {
             }
         })
 
-        console.log('pending ids: ', pendingMessagesIDs)
+        // console.log('pending ids: ', pendingMessagesIDs)
 
         if(pendingMessages.length)
             socket.current.emit('messages-read', { chatID: activeChat.chatID, pendingMessagesIDs, userID: userInfo._id })
@@ -149,7 +159,7 @@ const ChatBox = ({ activeChat, activeChatHandler }) => {
                     <ChatHeaderPrivate data={activeChat} activeChatHandler={activeChatHandler} /> :
                     <ChatHeaderGroup data={activeChat} activeChatHandler={activeChatHandler} />
                 }
-                <ChatMessages messages={chatMessages} />
+                <ChatMessages messages={chatMessages}  />
                 <ChatInput activeChatID={activeChat.chatID} />
             </>) : <NoChatScreen />
         }</div>

@@ -26,18 +26,19 @@ const ChatHeaderGroup = ({ data, activeChatHandler }) => {
             window.removeEventListener("resize", handleResize);
         };
     }, []);
+    
 
     useEffect(() => {
         if (!data || !data.members) return;
 
-        const members = data.members.map(item => item.userID);
         const onlineUsersSet = new Set(onlineUsers);
-        const onlineMembers = members.filter(item => onlineUsersSet.has(item._id));
-        const offlineMembers = members.filter(item => !onlineUsersSet.has(item._id));
+        const onlineMembers = data.members.filter(item => onlineUsersSet.has(item));
+        const offlineMembers = data.members.filter(item => !onlineUsersSet.has(item));
 
         setOnlineMembersInCurrentChat(onlineMembers);
         setOfflineMembersInCurrentChat(offlineMembers);
     }, [data, onlineUsers]);
+
 
     // Receive typing status
     useEffect(() => {
@@ -58,7 +59,7 @@ const ChatHeaderGroup = ({ data, activeChatHandler }) => {
     }, [userInfo]);
 
     const toggleModal = () => {
-        setIsModalOpen(prev => !prev);
+        setIsModalOpen((prev) => !prev);
     };
 
     // Format typing users message
@@ -85,7 +86,7 @@ const ChatHeaderGroup = ({ data, activeChatHandler }) => {
                 </div>
                 <div>
                     <h2 className="font-semibold">
-                        {data.type === "private" ? `${data.firstName} ${data.lastName}` : data.name}
+                        {data.name}
                     </h2>
                     {typingMessage && (
                         <p className="text-green-500 text-sm">{typingMessage}</p>
@@ -101,6 +102,7 @@ const ChatHeaderGroup = ({ data, activeChatHandler }) => {
                 offlineMembers={offlineMembersInCurrentChat}
                 mobile={mobile} // Passing mobile state to MembersPopup
                 userInfo={userInfo}
+                groupInfo={data}
             />
         </>
     );

@@ -1,18 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { socketService } from '../socket/SocketService';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import ChatsItem from './ChatItem';
 import { BsChatDotsFill } from "react-icons/bs";
 import { AiOutlineUserAdd, AiOutlineTeam } from "react-icons/ai";
 import { useRouter } from 'next/navigation';
+import { addContactInfos, setLastOnlineStatuses } from '@/app/store/slices/contactsSlice';
+import { setActiveChatInfo } from '@/app/store/slices/activeChatSlice';
 
 const Chats = ({ style, activeChatHandler }) => {
     const socket = useRef();
     const userInfo = useSelector((state) => state.user.userInfo);
+    const lastOnline = useSelector((state) => state.contacts.lastOnline);
     const [chats, setChats] = useState([]);
     const [showOptions, setShowOptions] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const router = useRouter();
+    const dispatch = useDispatch()
 
     const toggleOptions = () => setShowOptions(!showOptions);
 
@@ -21,37 +25,72 @@ const Chats = ({ style, activeChatHandler }) => {
         socket.current = socketService.getSocket();
     }, []);
 
+
     useEffect(() => {
         if (!userInfo) return;
+
         socket.current.emit('get-all-groupChats', { userID: userInfo._id }, (response) => {
-            setChats(response);
+            let users = new Map()
+            let userIDs = new Set()
+            for (const group of response) {
+                for (const member of group.members) {
+                    users.set(member.userID._id, member.userID)
+                    userIDs.add(member.userID._id)
+                }
+            }
+            // set contacts
+            const usersObject = Object.fromEntries(users)
+            dispatch(addContactInfos(usersObject))
+
+            // filter chats data and provide only necessary data like name, profile and _id of chat
+            const chats = response.map(chat => {
+                if (chat.type === 'private') {
+                    let filtered = chat.members.filter(
+                        (item) => item.userID?._id !== userInfo?._id
+                    );
+                    filtered = filtered[0]?.userID;
+
+                    if (filtered) {
+                        const otherUser = {
+                            name: filtered.firstName+' '+filtered.lastName,
+                            chatID: chat._id,
+                            _id: filtered._id,
+                            type: 'private',
+                            profile: filtered.profile,
+                            members: chat.members.map(item => item.userID._id)
+                        } // for private chat this is more efficient than extracting data in each chat individually
+                        return otherUser
+                    }
+                } else if (chat.type == 'group') {
+                    const otherUser = {
+                        chatID: chat._id,
+                        members: chat.members.map(item => item.userID._id),
+                        profile: chat.profile,
+                        name: chat.name,
+                        type: 'group'
+                    }; // for group chat we only pass userID of members of the chat and access each users data in the chat itself
+                    return otherUser
+                }
+            });
+            setChats(chats);
+
+
+            // set last online statuses of users
+            userIDs = Array.from(userIDs)
+            socket.current.emit('get-last-online-statuses', { userIDs }, (response) => {
+                dispatch(setLastOnlineStatuses(response))
+            })
         });
     }, [userInfo]);
 
     const onChatClick = (data) => {
+        dispatch(setActiveChatInfo(data))
         activeChatHandler(data);
     };
 
     // Filter chats based on search query
     const filteredChats = chats.filter(chat => {
-        let otherUser;
-
-        if (chat.type === 'private') {
-            const filtered = chat.members.filter(
-                (item) => item.userID?._id !== userInfo?._id
-            );
-            otherUser = filtered[0]?.userID;
-        } else {
-            return chat.name.toLowerCase().includes(searchQuery.toLowerCase())
-        }
-
-        // If otherUser exists, check if their name matches the search query
-        if (otherUser) {
-            const fullName = `${otherUser.firstName} ${otherUser.lastName}`.toLowerCase();
-            return fullName.includes(searchQuery.toLowerCase());
-        }
-
-        return false;
+        return chat && chat.name.toLowerCase().includes(searchQuery.toLowerCase())
     });
 
     return (
@@ -91,33 +130,14 @@ const Chats = ({ style, activeChatHandler }) => {
             )}
 
             <div className="px-4 gap-3 flex flex-col overflow-y-scroll">
-                {userInfo && filteredChats.map((chat) => {
-                    let otherUser;
-
-                    if (chat.type === 'private') {
-                        const filtered = chat.members.filter(
-                            (item) => item.userID?._id !== userInfo?._id
-                        );
-                        otherUser = filtered[0]?.userID;
-
-                        if (otherUser) {
-                            otherUser.type = 'private';
-                            otherUser.chatID = chat._id
-                        }
-                    } else {
-                        otherUser = chat;
-                        otherUser.chatID = chat._id
-                    }
-
-                    return otherUser ? (
-                        <ChatsItem
-                            key={chat._id}
-                            data={otherUser}
-                            isOnline={chat.isOnline}
-                            onClick={() => onChatClick(otherUser)}
-                        />
-                    ) : null;
-                })}
+                {userInfo && filteredChats.map((chat) => 
+                    <ChatsItem
+                        key={chat.chatID}
+                        data={chat}
+                        isOnline={false}
+                        onClick={() => onChatClick(chat)}
+                    />
+                )}
             </div>
         </div>
     );

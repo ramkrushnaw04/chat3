@@ -5,17 +5,24 @@ import Message from '../Message';
 
 const ChatMessages = ({ messages }) => {
     const userInfo = useSelector((state) => state.user.userInfo);
+    const activeChatInfo = useSelector((state) => state.activeChat)
+    const noOfMembers = activeChatInfo.members.length
 
     return messages && messages.length > 0 ? (
-      <div className="messages flex-1 p-4 overflow-y-auto">
-        {messages.map((msg, index) => (
-          <Message
-            key={index}
-            message={msg}
-            isSentByUser={msg.senderID === userInfo._id} 
-          />
-        ))}
-      </div>
+        <div className="messages flex-1 p-4 overflow-y-auto">
+            {messages.map((msg, index) => {
+                if (msg.readBy.length >= noOfMembers-1)
+                    msg = {...msg, status: 'read'}
+
+                return (
+                    <Message
+                        key={index}
+                        message={msg}
+                        isSentByUser={msg.senderID === userInfo._id}
+                    />)
+            }
+            )}
+        </div>
     ) : (
         <div className="flex flex-col items-center justify-center h-screen bg-white text-gray-600">
             <svg

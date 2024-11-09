@@ -14,8 +14,10 @@ const groupChatSchema = require('./models/GroupChatSchema');
 const GroupChat = mongoose.model('GroupChat', groupChatSchema);
 
 const userGroupSchema = require('./models/UserGroupSchema');
-const { copyFileSync } = require('fs');
 const UserGroup = mongoose.model('UserGroup', userGroupSchema);
+
+const lastOnlineUser = require('./models/LastOnlineUserSchema');
+const LastOnlineUser = mongoose.model('LastOnlineUser', lastOnlineUser);
 
 const server = createServer(app);
 const io = new Server(server, {
@@ -30,7 +32,7 @@ app.use(express.json());
 
 const port = process.env.PORT || 3000;
 const dbURL = process.env.DB_URL;
- 
+
 let onlineUsers = {} // format: userID: socketID
 
 mongoose.connect(dbURL)
@@ -56,7 +58,12 @@ io.on('connection', socket => {
             profile: data.profileImage,
             email: data.user.email,
         });
+        const lastOnline = new LastOnlineUser({
+            userID: user._id,
+            lastOnline: Date.now()
+        });
         await user.save();
+        await lastOnline.save();
         callback(user);
     });
 
@@ -84,36 +91,39 @@ io.on('connection', socket => {
         });
         await Promise.all(groupPromises);
         await groupChat.save();
-        callback({success: true, groupID: groupChat._id});
+        callback({ success: true, groupID: groupChat._id });
     });
 
     socket.on('message', ({ room, message }) => {
         // artificial delay
         setTimeout(() => {
             socket.to(room).emit('message', message);
-            socket.emit('update-message', {messageID: message.ID, status: 'sent', chatID: message.chatID, type: 'sent'})
+            socket.emit('update-message', { messageID: message.ID, status: 'sent', chatID: message.chatID, type: 'sent' })
         }, 1000);
     });
 
-    socket.on('messages-read', ({chatID, pendingMessagesIDs, userID}) => {
+    socket.on('messages-read', ({ chatID, pendingMessagesIDs, userID }) => {
         // we are sending message sent only to the clients (if online) who sent the message
         // because for the other clients this info is useless
-        for (const {messageID, senderID} of pendingMessagesIDs) {
-            if(!onlineUsers[senderID]) return
+        for (const { messageID, senderID } of pendingMessagesIDs) {
+            if (!onlineUsers[senderID]) return
             const socketID = String(onlineUsers[senderID])
             console.log('sent to: ', socketID, ' messageID: ', messageID)
             // io.to(socketID).emit('messages-read', {chatID, messageID})
-            io.to(socketID).emit('update-message', {chatID, messageID, type: 'read', userID})
+            io.to(socketID).emit('update-message', { chatID, messageID, type: 'read', userID })
         }
     })
 
     socket.on('get-all-groupChats', async (data, callback) => {
         const searchedGroups = await UserGroup.getAllUserGroups(data.userID);
-        searchedGroups.forEach(group => {
+        searchedGroups.forEach(async group => {
             // join the user to each chat (room) they are a part of
             const roomName = String(group._id)
             socket.join(roomName);
-            socket.to(roomName).emit('user-online', {userID: data.userID})
+
+            // get last online time of the user
+            const time = await LastOnlineUser.find({userID: data.userID})
+            socket.to(roomName).emit('user-online', { userID: data.userID, lastOnline: time[0].lastOnline })
         });
         callback(searchedGroups);
     });
@@ -127,7 +137,7 @@ io.on('connection', socket => {
             // check for each member if its online
             for (const item of group.members) {
                 const memberID = String(item.userID?._id)
-                if(onlineUsers[memberID]) {
+                if (onlineUsers[memberID]) {
                     users.add(memberID)
                 }
             }
@@ -142,6 +152,16 @@ io.on('connection', socket => {
     })
 
 
+    socket.on('get-last-online-statuses', async (data, callback) => {
+        if (!data.userIDs.length) {
+            callback({})
+            return
+        }
+        const lastOnlineStatuses = await LastOnlineUser.getLastOnlineStatus(data.userIDs)
+        callback(lastOnlineStatuses)
+    })
+
+
     socket.on('disconnect', async () => {
         console.log(`${socket.id} disconnected`);
 
@@ -149,17 +169,23 @@ io.on('connection', socket => {
 
         // send message to all the conencted users that the user is offline
         const removedEntries = entries.filter(item => item[1] == socket.id);
-        if(removedEntries[0]) {
+        if (removedEntries[0]) {
             const searchedGroups = await UserGroup.getAllUserGroups(removedEntries[0][0]);
-            searchedGroups.forEach(group => {
+            searchedGroups.forEach(async group => {
                 const groupID = String(group._id)
-                socket.to(groupID).emit('user-offline', {userID: removedEntries[0][0]})
+                socket.to(groupID).emit('user-offline', { userID: removedEntries[0][0], lastOnline: Date.now() })
             });
 
             // remove the user from onlineUsers
             const filteredEntries = entries.filter(item => item[1] != socket.id)
             const newOnlineUsers = Object.fromEntries(filteredEntries)
             onlineUsers = newOnlineUsers
+
+            // update the last online status
+            await LastOnlineUser.updateOne(
+                { userID: removedEntries[0][0] },
+                { lastOnline: Date.now() }   
+            );
         }
     });
 });

@@ -18,10 +18,9 @@ export default function Chats() {
     const socket = useRef(null);
     const [userList, setUserList] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
-    const userInfo = useSelector((state) => state.user.userInfo);
 
-    const [selectedGroupUsers, setSelectedGroupUsers] = useState([]); // Changed to hold user objects
-    const [isCreatingGroup, setIsCreatingGroup] = useState(false); // New state to track navigation
+    const [selectedGroupUsers, setSelectedGroupUsers] = useState([]); 
+    const [isCreatingGroup, setIsCreatingGroup] = useState(false); 
 
     useEffect(() => {
         socketService.connect();
@@ -41,22 +40,22 @@ export default function Chats() {
     }
 
     const handleUserSelect = (user) => {
-        setSelectedGroupUsers(prevSelectedUsers => [...prevSelectedUsers, user]); // Store full user object
+        setSelectedGroupUsers(prevSelectedUsers => [...prevSelectedUsers, user]); 
         setSearchQuery("");
     };
 
     const handleRemoveUser = (userId) => {
         setSelectedGroupUsers(prevSelectedUsers => 
-            prevSelectedUsers.filter(user => user._id !== userId) // Remove user by ID
+            prevSelectedUsers.filter(user => user._id !== userId) 
         );
     };
 
     const handleProceed = () => {
-        setIsCreatingGroup(true); // Navigate to group creation screen
+        setIsCreatingGroup(true); 
     };
 
     const handleBack = () => {
-        setIsCreatingGroup(false); // Go back to user selection screen
+        setIsCreatingGroup(false);
     };
 
     // Get user details for selected user IDs
