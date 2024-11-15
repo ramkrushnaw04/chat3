@@ -13,7 +13,6 @@ export const contactsSlice = createSlice({
     initialState,
     reducers: {
         addContactInfos: (state, action) => {
-            // console.log(action.payload)
             const users = Object.entries(action.payload)
             for (const [userID, userInfo] of users) {
                 if(!state[userID]) 

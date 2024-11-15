@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AiOutlineArrowLeft } from "react-icons/ai";
 import { socketService } from "./socket/SocketService";
+import { useSelector } from "react-redux";
 
 export default function GroupCreation({ selectedUsers, onBack }) {
     const router = useRouter();
@@ -11,16 +12,13 @@ export default function GroupCreation({ selectedUsers, onBack }) {
     const [groupIcon, setGroupIcon] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const socket = useRef(null)
+    const userInfo = useSelector((state) => state.user.userInfo)
 
     useEffect(() => {
         socketService.connect()
-      socket.current = socketService.getSocket()
-    
-      return () => {
-
-      }
+        socket.current = socketService.getSocket()
     }, [])
-    
+
 
     const handleImageChange = (event) => {
         const file = event.target.files[0];
@@ -41,8 +39,14 @@ export default function GroupCreation({ selectedUsers, onBack }) {
 
     const handleCreateGroup = () => {
         const userIDs = selectedUsers.map(user => user._id);
-        socket.current.emit('create-chat', { name: groupName, profile: groupIcon, userIDs, type: 'group' }, (response) => {
-            if(response.success) {
+        userIDs.push(userInfo._id)
+        socket.current.emit('create-chat', {
+            name: groupName,
+            profile: groupIcon,
+            userIDs,
+            type: 'group'
+        }, (response) => {
+            if (response.success) {
                 setGroupIcon(null)
                 setGroupName('')
                 setImagePreview(null)
@@ -99,10 +103,14 @@ export default function GroupCreation({ selectedUsers, onBack }) {
 
             <div className="mt-6 w-11/12 max-w-md flex flex-wrap items-center gap-2">
                 <h2 className="font-semibold">Members:</h2>
+                <div className="flex items-center space-x-2 p-2 border border-gray-300 rounded-full bg-gray-100">
+                    <img src={userInfo.profile} alt={userInfo.firstName} className="w-8 h-8 rounded-full" />
+                    <span className="text-sm">You</span>
+                </div>
                 {selectedUsers.map(user => (
                     <div key={user._id} className="flex items-center space-x-2 p-2 border border-gray-300 rounded-full bg-gray-100">
-                        <img src={user.profile} alt={user.name} className="w-8 h-8 rounded-full" />
-                        <span className="text-sm">{user.name}</span>
+                        <img src={user.profile} alt={user.firstName} className="w-8 h-8 rounded-full" />
+                        <span className="text-sm">{user.firstName} {user.lasName}</span>
                     </div>
                 ))}
             </div>
@@ -110,9 +118,8 @@ export default function GroupCreation({ selectedUsers, onBack }) {
             <button
                 onClick={handleCreateGroup}
                 disabled={!groupName || selectedUsers.length === 0}
-                className={`absolute bottom-6 w-11/12 max-w-md px-6 py-2 font-semibold rounded-md transition duration-200 ${
-                    groupName && selectedUsers.length > 0 ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
+                className={`absolute bottom-6 w-11/12 max-w-md px-6 py-2 font-semibold rounded-md transition duration-200 ${groupName && selectedUsers.length > 0 ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
             >
                 Create Group
             </button>

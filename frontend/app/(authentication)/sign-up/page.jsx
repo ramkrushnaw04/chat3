@@ -13,7 +13,6 @@ export default function SignUp() {
     const router = useRouter()
     const socket = useRef(null)
     const dispatch = useDispatch()
-    const userInfo = useSelector((state) => state.user.userInfo)
 
 
     useEffect(() => {
@@ -39,9 +38,9 @@ export default function SignUp() {
                 // send data to backend to save
                 socket.current.emit('sign-up', { user, firstName, lastName, profileImage: '' }, (response) => {
                     dispatch(setUserInfo(response))
+                    router.push('/')
                 });
         
-                router.push('/')
 
             })
 

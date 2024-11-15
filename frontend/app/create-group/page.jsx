@@ -18,9 +18,10 @@ export default function Chats() {
     const socket = useRef(null);
     const [userList, setUserList] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const userInfo = useSelector((state) => state.user.userInfo)
 
-    const [selectedGroupUsers, setSelectedGroupUsers] = useState([]); 
-    const [isCreatingGroup, setIsCreatingGroup] = useState(false); 
+    const [selectedGroupUsers, setSelectedGroupUsers] = useState([]);
+    const [isCreatingGroup, setIsCreatingGroup] = useState(false);
 
     useEffect(() => {
         socketService.connect();
@@ -40,18 +41,18 @@ export default function Chats() {
     }
 
     const handleUserSelect = (user) => {
-        setSelectedGroupUsers(prevSelectedUsers => [...prevSelectedUsers, user]); 
+        setSelectedGroupUsers(prevSelectedUsers => [...prevSelectedUsers, user]);
         setSearchQuery("");
     };
 
     const handleRemoveUser = (userId) => {
-        setSelectedGroupUsers(prevSelectedUsers => 
-            prevSelectedUsers.filter(user => user._id !== userId) 
+        setSelectedGroupUsers(prevSelectedUsers =>
+            prevSelectedUsers.filter(user => user._id !== userId)
         );
     };
 
     const handleProceed = () => {
-        setIsCreatingGroup(true); 
+        setIsCreatingGroup(true);
     };
 
     const handleBack = () => {
@@ -59,12 +60,12 @@ export default function Chats() {
     };
 
     // Get user details for selected user IDs
-    const selectedUsersDetails = userList.filter(user => 
+    const selectedUsersDetails = userList.filter(user =>
         selectedGroupUsers.map(u => u._id).includes(user._id)
     );
 
     return (
-        <div className="relative w-screen h-screen flex flex-col items-center bg-white text-black">
+        <div className="relative w-screen h-100svh flex flex-col items-center bg-white text-black">
             <Navbar />
 
             {isCreatingGroup ? (
@@ -83,21 +84,29 @@ export default function Chats() {
 
                     {/* Selected Users Row */}
                     <div className="w-11/12 max-w-md flex flex-wrap items-center gap-2 mt-4 p-2">
+                    {/* show this user in seleted users permanantly */}
+                        <div
+                            className="flex items-center space-x-2 p-2 border border-gray-300 rounded-full bg-gray-100"
+                        >
+                            <img src={userInfo.profile} alt="YOU" className="w-8 h-8 rounded-full" />
+                            <span className="text-sm">You</span>
+                        </div>
+
                         {selectedUsersDetails.length > 0 ? (
                             selectedUsersDetails.map(user => (
                                 <div
                                     key={user._id}
                                     className="flex items-center space-x-2 p-2 border border-gray-300 rounded-full bg-gray-100"
                                 >
-                                    <img src={user.profile} alt={user.name} className="w-8 h-8 rounded-full" />
-                                    <span className="text-sm">{user.name}</span>
+                                    <img src={user.profile} alt={user.firstName} className="w-8 h-8 rounded-full" />
+                                    <span className="text-sm">{user.firstName+' '+user.lastName}</span>
                                     <button onClick={() => handleRemoveUser(user._id)} className="text-gray-500 hover:text-gray-700">
                                         <AiOutlineClose className="w-4 h-4" />
                                     </button>
                                 </div>
                             ))
                         ) : (
-                            <span className="text-gray-500">No selected users</span>
+                            <span className="text-gray-500 ml-4">Select more people</span>
                         )}
                     </div>
 
@@ -108,9 +117,8 @@ export default function Chats() {
                     <button
                         onClick={handleProceed}
                         disabled={selectedUsersDetails.length === 0}
-                        className={`absolute bottom-6 w-11/12 max-w-md px-6 py-2 font-semibold rounded-md transition duration-200 ${
-                            selectedUsersDetails.length > 0 ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        }`}
+                        className={`absolute bottom-6 w-11/12 max-w-md px-6 py-2 font-semibold rounded-md transition duration-200 ${selectedUsersDetails.length > 0 ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            }`}
                     >
                         Proceed
                     </button>

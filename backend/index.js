@@ -16,8 +16,11 @@ const GroupChat = mongoose.model('GroupChat', groupChatSchema);
 const userGroupSchema = require('./models/UserGroupSchema');
 const UserGroup = mongoose.model('UserGroup', userGroupSchema);
 
-const lastOnlineUser = require('./models/LastOnlineUserSchema');
-const LastOnlineUser = mongoose.model('LastOnlineUser', lastOnlineUser);
+const lastOnlineUserSchema = require('./models/LastOnlineUserSchema');
+const LastOnlineUser = mongoose.model('LastOnlineUser', lastOnlineUserSchema);
+
+const messageSchema = require('./models/MessageSchema')
+const Message = mongoose.model('Message', messageSchema)
 
 const server = createServer(app);
 const io = new Server(server, {
@@ -79,7 +82,7 @@ io.on('connection', socket => {
             name: data.name,
             members,
             // profile: data.profile,
-            profile: 'groupProfile',
+            profile: '',
             type: data.type
         });
         const groupPromises = members.map(user => {
@@ -91,27 +94,53 @@ io.on('connection', socket => {
         });
         await Promise.all(groupPromises);
         await groupChat.save();
+
+        // create a room of all these users
+        const roomName = String(groupChat._id)
+        for (const item of members) {
+            const socketID = onlineUsers[item.userID]
+            const targetSocket = io.sockets.sockets.get(socketID) // find socket of this user
+            if(targetSocket) targetSocket.join(roomName)
+        }
+
+        // now send message to this room that this user has joined
+        const populatedGroup = await GroupChat.findById(groupChat._id).populate('members.userID');
+        io.to(roomName).emit('group-created', populatedGroup)
         callback({ success: true, groupID: groupChat._id });
     });
 
-    socket.on('message', ({ room, message }) => {
+    socket.on('message', async ({ room, messageData }) => {
         // artificial delay
-        setTimeout(() => {
+        setTimeout(async () => {
+            // save message to db
+            const message = new Message({
+                ...messageData,
+                status: 'sent',
+            });
+            await message.save();
             socket.to(room).emit('message', message);
-            socket.emit('update-message', { messageID: message.ID, status: 'sent', chatID: message.chatID, type: 'sent' })
+            socket.emit('update-message', { messageID: messageData.ID, status: 'sent', chatID: messageData.chatID, type: 'sent', _id: message._id })
         }, 1000);
     });
 
-    socket.on('messages-read', ({ chatID, pendingMessagesIDs, userID }) => {
+    socket.on('messages-read', async ({ chatID, pendingMessagesIDs }) => {
         // we are sending message sent only to the clients (if online) who sent the message
         // because for the other clients this info is useless
-        for (const { messageID, senderID } of pendingMessagesIDs) {
-            if (!onlineUsers[senderID]) return
-            const socketID = String(onlineUsers[senderID])
-            console.log('sent to: ', socketID, ' messageID: ', messageID)
-            // io.to(socketID).emit('messages-read', {chatID, messageID})
-            io.to(socketID).emit('update-message', { chatID, messageID, type: 'read', userID })
+        for (const { messageID, readerID, senderID } of pendingMessagesIDs) {
+            if (onlineUsers[senderID]) {
+                const socketID = String(onlineUsers[senderID]) // send message to senderID socket
+                console.log(pendingMessagesIDs)
+                io.to(socketID).emit('update-message', { 
+                    chatID,
+                    messageID,
+                    type: 'read',
+                    readerID
+                })
+            }
         }
+
+        // upadte db
+        await Message.markMessagesAsRead(pendingMessagesIDs)
     })
 
     socket.on('get-all-groupChats', async (data, callback) => {
@@ -161,6 +190,16 @@ io.on('connection', socket => {
         callback(lastOnlineStatuses)
     })
 
+    socket.on('get-all-messages-of-chat', async ({chatID}, callback) => {
+        const messages  = await Message.getMessagesOfChat(chatID)
+        callback(messages   )
+    })
+
+    socket.on('file-message', async (data, callback) => {
+        console.log(data)
+        callback({res: true})
+    })
+
 
     socket.on('disconnect', async () => {
         console.log(`${socket.id} disconnected`);
@@ -188,6 +227,13 @@ io.on('connection', socket => {
             );
         }
     });
+
+    // socket.onAny((eventName, ...args) => {
+    //     console.log(eventName);
+    // });
+
+
+
 });
 
 app.get('/', (req, res) => {
@@ -212,6 +258,11 @@ app.get('/get-all-rooms', (req, res) => {
 
 app.get('/get-online-users', (req, res) => {
     res.json({ onlineUsers });
+});
+
+app.post('/get-messages-of-group', async (req, res) => {
+    const response = await Message.getMessagesOfChat(req.body.chatID)
+    res.send(response);
 });
 
 server.listen(port, () => {

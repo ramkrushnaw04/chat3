@@ -9,9 +9,7 @@ import Navbar from "@/app/components/NavBar";
 import { useEffect, useRef, useState } from "react";
 import { socketService } from "../components/socket/SocketService";
 import SearchedUser from "../components/addChat/SearchedUser";
-import { setUserInfo } from "@/app/store/slices/userSlice";
 import { useSelector } from "react-redux";
-import Profile from "../profile/page";
 
 export default function Chats() {
     const router = useRouter();
@@ -47,7 +45,8 @@ export default function Chats() {
         const myUserID = userInfo._id
         const otherID = user._id
 
-        socket.current.emit('create-chat', { name: 'chatName', profile: 'chatProfile', userIDs: [myUserID, otherID] }, (response) => {
+        // make request only if data is valid
+        myUserID && otherID && socket.current.emit('create-chat', { name: 'chatName', profile: 'chatProfile', userIDs: [myUserID, otherID] }, (response) => {
             if(response.success) {
                 router.push('/')
             }
@@ -55,10 +54,10 @@ export default function Chats() {
     };
 
     return (
-        <div className="relative w-screen h-screen flex flex-col items-center bg-white text-black">
+        <div className="relative w-screen h-100svh flex flex-col items-center bg-white text-black">
             <Navbar />
 
-            <div className="w-11/12 max-w-md mt-10">
+            <div className="w-11/12 max-w-md mt-10 ">
                 <input
                     type="text"
                     placeholder="Search for people..."

@@ -1,11 +1,16 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 
 const SearchedUser = ({ users, searchQuery, onSelectUser }) => {
-    const filteredUsers = users.filter(user =>
-        user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const userInfo = useSelector((state) => state.user.userInfo)
+
+    const filteredUsers = 
+        users
+        .filter(user => user._id != userInfo._id)
+        .filter(user =>
+            `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchQuery.toLowerCase())
+        );
 
     return (
         <div className="mt-5 w-11/12 max-w-md ">

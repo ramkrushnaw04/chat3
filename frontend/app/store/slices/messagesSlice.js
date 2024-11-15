@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { actionAsyncStorage } from 'next/dist/client/components/action-async-storage-instance'
 
 const initialState = {
     pendingMessages: {
@@ -20,7 +21,6 @@ export const messagesSlice = createSlice({
         },
         setMessagesInBatch: (state, action) => {
             // action.payload format: [{ chatID: updatedMessages }]
-            console.log(action.payload)
             const keys = Object.keys(action.payload)
             for (const chatID of keys) {
                 state[chatID]  = action.payload[chatID]
@@ -46,6 +46,11 @@ export const messagesSlice = createSlice({
                 state.pendingMessages[chatID] = [...state.pendingMessages[chatID], message]
             }
         },
+        setPendingMessages: (state, action) => {
+            // console.log('setPendingMessages', action.payload)
+            const {chatID, messages} = action.payload
+            state.pendingMessages[chatID] = messages
+        },
         resetPendingMessages: (state, action) => {
             const {chatID} = action.payload
             state.pendingMessages[chatID] = []
@@ -64,6 +69,6 @@ export const messagesSlice = createSlice({
 })
 
 
-export const { setMessages, addNewMessage, addNewPendingMessage, resetPendingMessages, addMultipleNewMessage, setMessagesInBatch } = messagesSlice.actions
+export const { setMessages, addNewMessage, addNewPendingMessage, resetPendingMessages, addMultipleNewMessage, setMessagesInBatch, setPendingMessages } = messagesSlice.actions
 
 export default messagesSlice.reducer

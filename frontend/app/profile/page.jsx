@@ -25,15 +25,32 @@ const Profile = () => {
     }, []);
 
 
-    if (!user && !storedUser) {
-        router.push('/log-in');
-    } else {
-        socket.current && socket.current.emit('get-user-info-form-authID', { authID: user.uid }, (response) => {
-            dispatch(setUserInfo(response))
-            user = storedUser;
-        })
-    }
+    // if (!user && !storedUser) {
+    //     router.push('/log-in');
+    // } else {
+    //     socket.current && socket.current.emit('get-user-info-form-authID', { authID: user.uid }, (response) => {
+    //         dispatch(setUserInfo(response))
+    //         user = storedUser;
+    //     })
+    // }
 
+    useEffect(() => {
+        if (!user && !storedUser) {
+            router.push('/log-in');
+        } else if (user && socket.current) {
+            socket.current.emit(
+                'get-user-info-form-authID',
+                { authID: user.uid },
+                (response) => {
+                    if (response) {
+                        dispatch(setUserInfo(response));
+                        localStorage.setItem('chat3UserInfo', JSON.stringify(response));
+                    }
+                }
+            );
+        }
+    }, [user, storedUser, socket.current, dispatch]);
+    
     
     
       

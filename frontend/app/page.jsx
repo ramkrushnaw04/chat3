@@ -6,11 +6,9 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/app/components/NavBar";
 import { useEffect, useRef, useState } from "react";
 import { socketService } from "./components/socket/SocketService";
-
-
 import Chats from "./components/chats/Chats";
 import { setUserInfo } from "./store/slices/userSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import ChatBox from "./components/chatBox/ChatBox";
 
 export default function Home() {
@@ -22,9 +20,7 @@ export default function Home() {
     const [activeChat, setActiveChat] = useState(null)
     const mobileWidth = 768
     const [mobile, setMobile] = useState(window.innerWidth < mobileWidth ? true : false)
-
-
-
+    const userInfo = useSelector(state => state.user.userInfo)
 
     useEffect(() => {
         socketService.connect();
@@ -38,20 +34,40 @@ export default function Home() {
         window.addEventListener('resize', handleResize)
 
 
+
         return () => {
-            socketService.disconnect();
             window.removeEventListener('resize', handleResize)
         };
     }, []);
 
-    if (!user && !storedUser) {
-        router.push('/log-in');
-    } else {
-        socket.current && socket.current.emit('get-user-info-form-authID', { authID: user.uid }, (response) => {
-            dispatch(setUserInfo(response))
-            user = storedUser;
-        })
-    }
+
+    // if (!user && !storedUser) {
+    //     router.push('/log-in');
+    // } else {
+    //     socket.current && socket.current.emit('get-user-info-form-authID', { authID: user.uid }, (response) => {
+    //         dispatch(setUserInfo(response))
+    //         user = storedUser;
+    //     })
+    // }
+
+
+    useEffect(() => {
+        if (!user && !storedUser) {
+            router.push('/log-in');
+        } else if (user && socket.current) {
+            socket.current.emit(
+                'get-user-info-form-authID',
+                { authID: user.uid },
+                (response) => {
+                    if (response) {
+                        dispatch(setUserInfo(response));
+                        localStorage.setItem('chat3UserInfo', JSON.stringify(response));
+                    }
+                }
+            );
+        }
+    }, [user, storedUser, socket.current, dispatch]);
+
 
     function handleActiveChat(data) {
         setActiveChat(data)

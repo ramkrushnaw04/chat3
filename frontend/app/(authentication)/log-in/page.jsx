@@ -5,20 +5,16 @@ import { auth } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { socketService } from "@/app/components/socket/SocketService";
-import { useDispatch, useSelector } from "react-redux";
-import { setUserInfo } from "@/app/store/slices/userSlice";
 
 
 export default function LogIn() {
 
     const router = useRouter()
     const socket = useRef(null)
-    const userInfo = useSelector((state) => state.user.userInfo)
 
     useEffect(() => {
         socketService.connect()
         socket.current = socketService.getSocket()
-
     }, [])
 
 

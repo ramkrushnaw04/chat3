@@ -63,7 +63,6 @@ const ChatHeaderPrivate = ({ data, activeChatHandler }) => {
     // Show online presence in online users list
     useEffect(() => {
         if (!onlineUsers || !data._id) return;
-        console.log(onlineUsers, data._id)
         setIsOnline(onlineUsers.includes(data._id));
     }, [data, onlineUsers]);
 

@@ -28,7 +28,7 @@ userSchema.statics.findByQuery = async function (query) {
     return results;
 }
 
-const User = model('User', userSchema) // always make sure that model is creted after the static or method functions
+
 
 
 
