@@ -3,13 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AiOutlineArrowLeft } from "react-icons/ai";
-import { socketService } from "./socket/SocketService";
+import { socketService } from "../components/socket/SocketService";
 import { useSelector } from "react-redux";
 
 export default function GroupCreation({ selectedUsers, onBack }) {
     const router = useRouter();
     const [groupName, setGroupName] = useState("");
-    const [groupIcon, setGroupIcon] = useState(null);
+    const [groupDescription, setGroupDescription] = useState("");
     const [imagePreview, setImagePreview] = useState(null);
     const socket = useRef(null)
     const userInfo = useSelector((state) => state.user.userInfo)
@@ -25,7 +25,6 @@ export default function GroupCreation({ selectedUsers, onBack }) {
         if (file) {
             const validImageTypes = ["image/jpeg", "image/png", "image/gif"];
             if (validImageTypes.includes(file.type)) {
-                setGroupIcon(file);
                 const reader = new FileReader();
                 reader.onload = () => {
                     setImagePreview(reader.result);
@@ -42,14 +41,16 @@ export default function GroupCreation({ selectedUsers, onBack }) {
         userIDs.push(userInfo._id)
         socket.current.emit('create-chat', {
             name: groupName,
-            profile: groupIcon,
+            profile: imagePreview,
             userIDs,
-            type: 'group'
+            description: groupDescription,
+            type: 'group',
+            creationMessgae: `${userInfo.firstName} ${userInfo.lastName} has created group '${groupName}'.`
         }, (response) => {
             if (response.success) {
-                setGroupIcon(null)
                 setGroupName('')
                 setImagePreview(null)
+                setGroupDescription('')
                 router.push('/')
             }
         })
@@ -71,6 +72,16 @@ export default function GroupCreation({ selectedUsers, onBack }) {
                     value={groupName}
                     onChange={(e) => setGroupName(e.target.value)}
                     required
+                />
+            </div>
+
+            <div className="w-11/12 max-w-md mt-4">
+                <textarea
+                    placeholder="Group Description"
+                    className="w-full p-4 border resize-none border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-base"
+                    value={groupDescription}
+                    onChange={(e) => setGroupDescription(e.target.value)}
+                    rows={3}
                 />
             </div>
 

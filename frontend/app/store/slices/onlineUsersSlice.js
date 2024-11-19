@@ -15,6 +15,12 @@ export const userSlice = createSlice({
             if(!state.onlineUsers.includes(userID))
                 state.onlineUsers.push(userID);
         },
+        addOnlineUsers: (state, action) => {
+            for (const userID of action.payload) {
+                if(!state.onlineUsers.includes(userID))
+                    state.onlineUsers.push(userID);
+            }
+        },
         removeOnlineUser: (state, action) => {
             // state.onlineUsers.delete(action.payload.userID);
             const filteredUsers = state.onlineUsers.filter(item => item != action.payload.userID)
@@ -28,6 +34,11 @@ export const userSlice = createSlice({
 })
 
 
-export const { addOnlineUser, removeOnlineUser, clearOnlineUsers } = userSlice.actions
+export const { 
+    addOnlineUser, 
+    removeOnlineUser, 
+    clearOnlineUsers,
+    addOnlineUsers 
+} = userSlice.actions
 
 export default userSlice.reducer

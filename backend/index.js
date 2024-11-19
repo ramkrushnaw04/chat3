@@ -19,7 +19,8 @@ const UserGroup = mongoose.model('UserGroup', userGroupSchema);
 const lastOnlineUserSchema = require('./models/LastOnlineUserSchema');
 const LastOnlineUser = mongoose.model('LastOnlineUser', lastOnlineUserSchema);
 
-const messageSchema = require('./models/MessageSchema')
+const messageSchema = require('./models/MessageSchema');
+const { group } = require('console');
 const Message = mongoose.model('Message', messageSchema)
 
 const server = createServer(app);
@@ -81,9 +82,9 @@ io.on('connection', socket => {
         const groupChat = new GroupChat({
             name: data.name,
             members,
-            // profile: data.profile,
-            profile: '',
-            type: data.type
+            profile: data.profile,
+            type: data.type,
+            description: data.description
         });
         const groupPromises = members.map(user => {
             const userGroup = new UserGroup({
@@ -100,12 +101,22 @@ io.on('connection', socket => {
         for (const item of members) {
             const socketID = onlineUsers[item.userID]
             const targetSocket = io.sockets.sockets.get(socketID) // find socket of this user
-            if(targetSocket) targetSocket.join(roomName)
+            if (targetSocket) targetSocket.join(roomName)
         }
 
         // now send message to this room that this user has joined
         const populatedGroup = await GroupChat.findById(groupChat._id).populate('members.userID');
         io.to(roomName).emit('group-created', populatedGroup)
+
+        const alertMessage = new Message({
+            text: data.creationMessgae,
+            chatID: groupChat._id,
+            type: 'alert',
+            sentAt: Date.now()
+        })
+        alertMessage.save()
+        io.to(data.chatID).emit('message', alertMessage)
+
         callback({ success: true, groupID: groupChat._id });
     });
 
@@ -120,7 +131,7 @@ io.on('connection', socket => {
             await message.save();
             socket.to(room).emit('message', message);
             socket.emit('update-message', { messageID: messageData.ID, status: 'sent', chatID: messageData.chatID, type: 'sent', _id: message._id })
-        }, 1000);
+        }, 0);
     });
 
     socket.on('messages-read', async ({ chatID, pendingMessagesIDs }) => {
@@ -130,7 +141,7 @@ io.on('connection', socket => {
             if (onlineUsers[senderID]) {
                 const socketID = String(onlineUsers[senderID]) // send message to senderID socket
                 console.log(pendingMessagesIDs)
-                io.to(socketID).emit('update-message', { 
+                io.to(socketID).emit('update-message', {
                     chatID,
                     messageID,
                     type: 'read',
@@ -143,6 +154,15 @@ io.on('connection', socket => {
         await Message.markMessagesAsRead(pendingMessagesIDs)
     })
 
+    socket.on('message-delete', async (data) => {
+        await Message.findByIdAndUpdate(
+            data.messageID,
+            { deleated: true },
+        )
+        const roomName = String(data.chatID)
+        io.to(roomName).emit('update-message', { ...data, type: 'delete' })
+    })
+
     socket.on('get-all-groupChats', async (data, callback) => {
         const searchedGroups = await UserGroup.getAllUserGroups(data.userID);
         searchedGroups.forEach(async group => {
@@ -151,7 +171,7 @@ io.on('connection', socket => {
             socket.join(roomName);
 
             // get last online time of the user
-            const time = await LastOnlineUser.find({userID: data.userID})
+            const time = await LastOnlineUser.find({ userID: data.userID })
             socket.to(roomName).emit('user-online', { userID: data.userID, lastOnline: time[0].lastOnline })
         });
         callback(searchedGroups);
@@ -190,14 +210,167 @@ io.on('connection', socket => {
         callback(lastOnlineStatuses)
     })
 
-    socket.on('get-all-messages-of-chat', async ({chatID}, callback) => {
-        const messages  = await Message.getMessagesOfChat(chatID)
-        callback(messages   )
+    socket.on('get-all-messages-of-chat', async ({ chatID }, callback) => {
+        const messages = await Message.getMessagesOfChat(chatID)
+        callback(messages)
     })
 
     socket.on('file-message', async (data, callback) => {
         console.log(data)
-        callback({res: true})
+        callback({ res: true })
+    })
+
+    socket.on('update-user-info', async (data, callback) => {
+        const newUser = await User.findByIdAndUpdate(data._id, data.update, { new: true })
+        callback(newUser)
+    })
+
+    socket.on('leave-user-group', async ({ userID, chatID }, callback) => {
+        // data: {userID, chatID}
+        // update UserGroup
+        await UserGroup.deleteOne({ userID, groupID: chatID })
+
+        // remove the user from groupChat members
+        await GroupChat.findByIdAndUpdate(
+            chatID,
+            { $pull: { members: { userID } } },
+        )
+
+        const userInfo = await User.findById(userID)
+        const alertMessage = new Message({
+            type: 'alert',
+            text: `${userInfo.firstName} ${userInfo.lastName} has left the chat.`,
+            chatID,
+            sentAt: Date.now()
+        })
+        await alertMessage.save()
+
+        // send message to all the users in that chat
+        const roomName = String(chatID)
+        io.to(roomName).emit('group-update', {
+            type: 'userLeave',
+            userID,
+            chatID,
+            time: Date.now(),
+            alertMessage
+        })
+
+
+        // leave room
+        socket.leave(roomName)
+    })
+
+
+    socket.on('join-user-group', async ({ userID, chatID }, callback) => {
+        // create userGroup only when there is none already
+        const userGroupAlready = await UserGroup.find({ userID, groupID: chatID })
+        if (!userGroupAlready.length) {
+            const userGroup = await UserGroup({ userID, groupID: chatID })
+            await userGroup.save()
+        } else {
+            // callback({message: 'user already in group'})
+            return
+        }
+        // add the user groupChat
+        const updatedGroupRes = await GroupChat.findByIdAndUpdate(
+            chatID,
+            { $addToSet: { members: { userID } } },
+            { new: true }
+        )
+
+        const updatedGroup = {
+            ...updatedGroupRes,
+            members: updatedGroupRes.members.map(item => String(item.userID)),
+            profile: updatedGroupRes.profile,
+            description: updatedGroupRes.description,
+        }
+
+        // make the other user join this room if they are online
+        const socketID = onlineUsers[userID]
+        if (socketID) {
+            const targetSocket = io.sockets.sockets.get(socketID)
+            targetSocket.join(chatID)
+        }
+
+        // get all the lastOnlien info of users
+        const lastOnlineStatuses = await LastOnlineUser.getLastOnlineStatus(updatedGroup.members)
+        // get online members
+        const onlineMembers = updatedGroup.members.filter(item => onlineUsers[item])
+
+        // get infos of members
+        let userInfos = {}
+        for (const item of updatedGroup.members) {
+            const userInfo = await User.findById(item)
+            userInfos[item] = userInfo
+        }
+
+
+        // send message to all the users in that chat
+        const userInfo = await User.findById(userID)
+
+        // create an alert message that the user has left that chat
+        const alertMessage = new Message({
+            type: 'alert',
+            text: `${userInfo.firstName} ${userInfo.lastName} has joined the chat.`,
+            chatID,
+            sentAt: Date.now()
+        })
+        await alertMessage.save()
+
+        io.to(chatID).emit('group-update', {
+            type: 'userJoin',
+            userID,
+            chatID,
+            time: Date.now(),
+            userInfo,
+            group: updatedGroup._doc,
+            lastOnlineStatuses,
+            onlineMembers,
+            userInfos,
+            alertMessage
+        })
+    })
+
+    socket.on('edit-group', async (data) => {
+        const { editedGroupInfo, chatID, editorName } = data
+        await GroupChat.findByIdAndUpdate(
+            chatID,
+            {
+                name: editedGroupInfo.name,
+                description: editedGroupInfo.description,
+                profile: editedGroupInfo.profile
+            },
+        )
+        const message = new Message({
+            type: 'alert',
+            text: `${editorName} updated group info.`,
+            chatID,
+            sentAt: Date.now()
+        })
+        await message.save()
+
+        io.to(chatID).emit('edit-group', { ...editedGroupInfo, chatID })
+        io.to(chatID).emit('message', message)
+    })
+
+    socket.on('delete-chat', async data => {
+        const { chatID, otherUserID, userID } = data
+        await GroupChat.findByIdAndDelete(chatID)
+        await UserGroup.deleteOne({ groupID: chatID, userID: userID })
+        await UserGroup.deleteOne({ groupID: chatID, userID: otherUserID })
+
+        // send message that user is removed
+        io.to(chatID).emit('delete-chat', { chatID })
+
+        // remove this user form room of this chat
+        socket.leave(chatID)
+
+        // remove other user from room of this chat
+        const socketID = onlineUsers[otherUserID]
+        if(socketID) {
+            const socket = io.sockets.sockets.get(socketID);
+            socket.leave(chatID)
+        }
     })
 
 
@@ -223,7 +396,7 @@ io.on('connection', socket => {
             // update the last online status
             await LastOnlineUser.updateOne(
                 { userID: removedEntries[0][0] },
-                { lastOnline: Date.now() }   
+                { lastOnline: Date.now() }
             );
         }
     });

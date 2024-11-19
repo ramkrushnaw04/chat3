@@ -26,6 +26,7 @@ const ChatBox = ({ activeChat, activeChatHandler }) => {
 
 
         function receiveMessage(data) {
+            // console.log('recieved message: ', data)
             const chatID = activeChat ? activeChat.chatID : null
             // if message is sent to current chat, add current user to readBy of the message
             if (chatID == data.chatID) {
@@ -101,6 +102,39 @@ const ChatBox = ({ activeChat, activeChatHandler }) => {
                 })
                 dispatch(setMessages({ chatID: data.chatID, messages: newMessages }))
             }
+            // message delete
+            else if(data.type == 'delete') {
+                // console.log('message being deleated: ', data)
+                // update messages in read messages
+                const oldMessages = storedMessages[data.chatID] || []
+                if(oldMessages.length) {
+                    const newMessages = oldMessages.map(item => {
+                        if (item._id == data.messageID) {
+                            return {
+                                ...item,
+                                deleated: true
+                            }
+                        }
+                        else return item
+                    })
+                    dispatch(setMessages({ chatID: data.chatID, messages: newMessages }))
+                }
+
+                // update messages in pending messages
+                const oldPendingMessages = storedMessages.pendingMessages[data.chatID] || []
+                if(oldPendingMessages.length) {
+                    const newPendingMessages = oldPendingMessages.map(item => {
+                        if (item._id == data.messageID) {
+                            return {
+                                ...item,
+                                deleated: true
+                            }
+                        }
+                        else return item
+                    })
+                    dispatch(setPendingMessages({ chatID: data.chatID, messages: newPendingMessages }))
+                }
+            }
         }
 
         socket.current.on('update-message', handleMessageUpdate)
@@ -152,7 +186,9 @@ const ChatBox = ({ activeChat, activeChatHandler }) => {
     // to update messages of active chat
     useEffect(() => {
         if (!activeChat || !storedMessages) return
-        const messages = [...storedMessages[activeChat.chatID]]
+        // console.log(storedMessages, activeChat)
+        const m = storedMessages[activeChat.chatID] || []
+        const messages = [...m]
         // messages.sort((a, b) => new Date(a.sentAt) - new Date(b.sentAt));
         setChatMessages(messages)
     }, [activeChat, storedMessages])

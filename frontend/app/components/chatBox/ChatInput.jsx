@@ -89,7 +89,6 @@ const ChatInput = ({ activeChatID }) => {
                 readBy: [],
                 file: fileData
             }
-            console.log('sending file: ', messageWithFile)
             socket.current.emit('message', { room: activeChatID, messageData: messageWithFile }, (response) => {
                 console.log(response);
             });

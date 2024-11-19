@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
-import { FaCheck, FaCheckDouble, FaRegClock, FaFilePdf, FaVideo, FaFileImage, FaFileAudio, FaDownload, FaEye } from 'react-icons/fa'; // Add the icons you need
+import React, { useEffect, useRef, useState } from 'react';
+import { FaCheck, FaCheckDouble, FaRegClock, FaFilePdf, FaVideo, FaFileImage, FaFileAudio, FaDownload, FaEye } from 'react-icons/fa'; 
+import { AiOutlineDelete } from 'react-icons/ai'
 import { useSelector } from 'react-redux';
+import { Socket } from 'socket.io-client';
+import { socketService } from './socket/SocketService';
 
 const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
     const contacts = useSelector((state) => state.contacts);
     const [showReadByPopup, setShowReadByPopup] = useState(false);
     const userInfo = useSelector((state) => state.user.userInfo);
     const activeChatInfo = useSelector((state) => state.activeChat);
+    const socket = useRef(null)
+
+    useEffect(() => {
+        socketService.connect()
+      socket.current = socketService.getSocket()
+    
+    }, [])
+    
 
     const togglePopup = () => {
         setShowReadByPopup((prev) => !prev);
@@ -73,6 +84,10 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
         window.open(message.file.content, '_blank');
     };
 
+    function handleDelete() {
+        socket.current.emit('message-delete', {messageID: message._id, chatID: activeChatInfo.chatID})
+    }
+
     return (
         <div className={`flex w-full message mb-2 ${isSentByUser ? 'justify-end' : 'justify-start'} group gap-2 items-center`}>
             {/* Buttons for download and view (visible on hover) */}
@@ -85,6 +100,9 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                     <FaEye />
                 </button>
             </div>}
+            {isSentByUser && <button onClick={handleDelete} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 group-hover:block hidden">
+                <AiOutlineDelete />
+            </button>}
 
             <div className="rounded relative max-w-[90%]">
                 <div onClick={togglePopup} className={`${isSentByUser ? 'bg-blue-500 text-white cursor-pointer ' : 'bg-gray-200 text-black'} rounded-md flex gap-2 items-center px-2 py-2`}>
@@ -213,6 +231,7 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                     <FaEye />
                 </button>
             </div>}
+            
         </div>
     );
 };

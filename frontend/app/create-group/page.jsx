@@ -9,19 +9,23 @@ import { socketService } from "../components/socket/SocketService";
 import SearchedUser from "../components/addChat/SearchedUser";
 import { useSelector } from "react-redux";
 import { AiOutlineClose } from "react-icons/ai";
-import GroupCreation from "../components/GroupCreation";
+import GroupCreation from "./GroupCreation";
 
-export default function Chats() {
+export default function page() {
     const router = useRouter();
     let [currentUser] = useAuthState(auth);
     const storedUserData = localStorage.getItem('chat3UserInfo');
     const socket = useRef(null);
     const [userList, setUserList] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
-    const userInfo = useSelector((state) => state.user.userInfo)
+    const userInfo = useSelector((state) => state.user.userInfo);
 
     const [selectedGroupUsers, setSelectedGroupUsers] = useState([]);
     const [isCreatingGroup, setIsCreatingGroup] = useState(false);
+
+    const [groupName, setGroupName] = useState("");
+    const [groupInfo, setGroupInfo] = useState(""); // New state for group info
+    const [groupImage, setGroupImage] = useState(""); // State for group image (base64)
 
     useEffect(() => {
         socketService.connect();
@@ -59,6 +63,18 @@ export default function Chats() {
         setIsCreatingGroup(false);
     };
 
+    // Handle image change and convert to base64
+    const handleGroupImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setGroupImage(reader.result); // base64 string
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     // Get user details for selected user IDs
     const selectedUsersDetails = userList.filter(user =>
         selectedGroupUsers.map(u => u._id).includes(user._id)
@@ -69,7 +85,16 @@ export default function Chats() {
             <Navbar />
 
             {isCreatingGroup ? (
-                <GroupCreation selectedUsers={selectedGroupUsers} onBack={handleBack} /> // Render new component
+                <GroupCreation 
+                    selectedUsers={selectedGroupUsers} 
+                    groupName={groupName} 
+                    groupInfo={groupInfo} 
+                    groupImage={groupImage} // Pass the base64 image to GroupCreation component
+                    onGroupNameChange={(e) => setGroupName(e.target.value)}
+                    onGroupInfoChange={(e) => setGroupInfo(e.target.value)} // Pass function to handle group info change
+                    onGroupImageChange={handleGroupImageChange} // Handle group image change
+                    onBack={handleBack} 
+                />
             ) : (
                 <>
                     <div className="w-11/12 max-w-md mt-10">
@@ -84,7 +109,6 @@ export default function Chats() {
 
                     {/* Selected Users Row */}
                     <div className="w-11/12 max-w-md flex flex-wrap items-center gap-2 mt-4 p-2">
-                    {/* show this user in seleted users permanantly */}
                         <div
                             className="flex items-center space-x-2 p-2 border border-gray-300 rounded-full bg-gray-100"
                         >
@@ -99,7 +123,7 @@ export default function Chats() {
                                     className="flex items-center space-x-2 p-2 border border-gray-300 rounded-full bg-gray-100"
                                 >
                                     <img src={user.profile} alt={user.firstName} className="w-8 h-8 rounded-full" />
-                                    <span className="text-sm">{user.firstName+' '+user.lastName}</span>
+                                    <span className="text-sm">{user.firstName + ' ' + user.lastName}</span>
                                     <button onClick={() => handleRemoveUser(user._id)} className="text-gray-500 hover:text-gray-700">
                                         <AiOutlineClose className="w-4 h-4" />
                                     </button>

@@ -46,7 +46,12 @@ export default function Chats() {
         const otherID = user._id
 
         // make request only if data is valid
-        myUserID && otherID && socket.current.emit('create-chat', { name: 'chatName', profile: 'chatProfile', userIDs: [myUserID, otherID] }, (response) => {
+        myUserID && otherID && socket.current.emit('create-chat', { 
+            name: 'chatName', 
+            profile: 'chatProfile', 
+            userIDs: [myUserID, otherID],
+            creationMessgae: `${userInfo.firstName} ${userInfo.lastName} created chat.`
+        }, (response) => {
             if(response.success) {
                 router.push('/')
             }

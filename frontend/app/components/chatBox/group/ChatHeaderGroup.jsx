@@ -26,7 +26,6 @@ const ChatHeaderGroup = ({ data, activeChatHandler }) => {
             window.removeEventListener("resize", handleResize);
         };
     }, []);
-    
 
     useEffect(() => {
         if (!data || !data.members) return;
@@ -39,8 +38,6 @@ const ChatHeaderGroup = ({ data, activeChatHandler }) => {
         setOfflineMembersInCurrentChat(offlineMembers);
     }, [data, onlineUsers]);
 
-
-    // Receive typing status
     useEffect(() => {
         socketService.connect();
         socket.current = socketService.getSocket();
@@ -62,7 +59,6 @@ const ChatHeaderGroup = ({ data, activeChatHandler }) => {
         setIsModalOpen((prev) => !prev);
     };
 
-    // Format typing users message
     const typingMessage = typingUsers.length > 0 
         ? `${typingUsers.join(', ')} ${typingUsers.length > 1 ? 'are' : 'is'} typing...` 
         : '';
@@ -94,13 +90,12 @@ const ChatHeaderGroup = ({ data, activeChatHandler }) => {
                 </div>
             </div>
 
-            {/* Members Popup Component */}
             <MembersPopup
                 isOpen={isModalOpen}
                 onClose={toggleModal}
                 onlineMembers={onlineMembersInCurrentChat}
                 offlineMembers={offlineMembersInCurrentChat}
-                mobile={mobile} // Passing mobile state to MembersPopup
+                mobile={mobile}
                 userInfo={userInfo}
                 groupInfo={data}
             />

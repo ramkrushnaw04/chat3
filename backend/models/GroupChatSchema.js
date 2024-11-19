@@ -6,8 +6,15 @@ const User = model('User', UserSchema)
 
 
 const groupSchema = Schema({
-    name: String,
-    profile: String,
+    name: {
+        type: String,
+        default: ''
+    },
+    profile: {
+        type: String,
+        default: '',
+        require: false
+    },
     type: {
         type: String,
         default: 'private'
@@ -20,7 +27,12 @@ const groupSchema = Schema({
         },
         _id: false
 
-    }]
+    }],
+    description: {
+        type: String,
+        require: false,
+        default: ''
+    }
 })
 
 

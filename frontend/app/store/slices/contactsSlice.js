@@ -13,6 +13,7 @@ export const contactsSlice = createSlice({
     initialState,
     reducers: {
         addContactInfos: (state, action) => {
+            // data: {userID: userInfoJSON}
             const users = Object.entries(action.payload)
             for (const [userID, userInfo] of users) {
                 if(!state[userID]) 
@@ -21,6 +22,13 @@ export const contactsSlice = createSlice({
         },
         setLastOnlineStatuses: (state, action) => {
             state.lastOnline = action.payload
+        },
+        addLastOnlineStatuses: (state, action) => {
+            const entries = Object.entries(action.payload)
+            for (const [key, value] of entries) {
+                if(!state.lastOnline[key])
+                    state.lastOnline[key] = value
+            }
         },
         addLastOnlineStatus: (state, action) => {
             state.lastOnline[action.payload.userID] = action.payload.lastOnline
@@ -32,6 +40,7 @@ export const contactsSlice = createSlice({
 })
 
 
-export const { addContactInfos, setLastOnlineStatuses, addLastOnlineStatus, removeLastOnlineStatus } = contactsSlice.actions
+export const { addContactInfos, setLastOnlineStatuses, addLastOnlineStatus, 
+    removeLastOnlineStatus, addLastOnlineStatuses } = contactsSlice.actions
 
 export default contactsSlice.reducer

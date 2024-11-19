@@ -48,7 +48,15 @@ const messageSchema = Schema({
     },
     sentAt: Date,
     status: String,
-    file: fileSchema
+    file: fileSchema,
+    deleated: {
+        type: Boolean,
+        default: false
+    },
+    type: {
+        type: String,
+        default: 'text'
+    }
 })
 
 

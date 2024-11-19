@@ -5,10 +5,11 @@ import ChatsItem from './ChatItem';
 import { BsChatDotsFill } from "react-icons/bs";
 import { AiOutlineUserAdd, AiOutlineTeam } from "react-icons/ai";
 import { useRouter } from 'next/navigation';
-import { addContactInfos, setLastOnlineStatuses } from '@/app/store/slices/contactsSlice';
+import { addContactInfos, addLastOnlineStatuses, setLastOnlineStatuses } from '@/app/store/slices/contactsSlice';
 import { setActiveChatInfo } from '@/app/store/slices/activeChatSlice';
-import { setPendingMessages, setMessages, resetPendingMessages, addMultipleNewMessage } from '@/app/store/slices/messagesSlice';
-import { addOnlineUser } from '@/app/store/slices/onlineUsersSlice';
+import { setPendingMessages, setMessages, resetPendingMessages, addMultipleNewMessage, addNewPendingMessage, addNewMessage } from '@/app/store/slices/messagesSlice';
+import { addOnlineUser, addOnlineUsers } from '@/app/store/slices/onlineUsersSlice';
+
 
 
 const Chats = ({ style, activeChatHandler }) => {
@@ -20,6 +21,7 @@ const Chats = ({ style, activeChatHandler }) => {
     const router = useRouter();
     const dispatch = useDispatch()
     const activeChat = useSelector(state => state.activeChat)
+    const onlineusers = useSelector(state => state.onlineUsers)
     const storedMessages = useSelector(state => state.messages)
     const toggleOptions = () => setShowOptions(!showOptions);
 
@@ -47,7 +49,8 @@ const Chats = ({ style, activeChatHandler }) => {
                 members: chat.members.map(item => item.userID._id),
                 profile: chat.profile,
                 name: chat.name,
-                type: 'group'
+                type: 'group',
+                description: chat.description
             }; // for group chat we only pass userID of members of the chat and access each users data in the chat itself
             return otherUser
         }
@@ -169,6 +172,175 @@ const Chats = ({ style, activeChatHandler }) => {
     }, [activeChat, userInfo, chats])
 
 
+
+    useEffect(() => {
+        if (!chats || !activeChat || !userInfo) return
+
+        function handleGroupUpdate(data) {
+            // data: {chatID, userID, time, type}
+            // when other user left the chat
+            if (data.type == 'userLeave' && data.userID != userInfo._id) {
+                // filter out chats
+                setChats(prev => {
+                    return prev.map(chat => {
+                        if (chat.chatID != data.chatID) return chat
+
+                        const members = chat.members.filter(item => item != data.userID)
+
+                        if (activeChat && activeChat.chatID == data.chatID) {
+                            setActiveChatInfo({
+                                ...activeChat,
+                                members
+                            })
+                            activeChatHandler(({
+                                ...activeChat,
+                                members
+                            }))
+                        }
+
+
+                        return {
+                            chatID: data.chatID,
+                            members,
+                            description: chat.description,
+                            name: chat.name,
+                            profile: chat.profile,
+                            type: chat.type
+                        }
+                    })
+                })
+
+                // add alert message
+                // if pending messages are present then add in pending messages or in normal messages
+                if (storedMessages.pendingMessages[data.chatID]?.length) {
+                    dispatch(addNewPendingMessage({ chatID: data.chatID, message: data.alertMessage }))
+                } else {
+                    dispatch(addNewMessage({ chatID: data.chatID, message: data.alertMessage }))
+                }
+            }
+            // when this user leaves the chat
+            else if (data.type == 'userLeave' && data.userID == userInfo._id) {
+                setChats(prev => {
+                    return prev.filter(chat => chat.chatID != data.chatID)
+                })
+                setActiveChatInfo(null)
+                activeChatHandler(null)
+            }
+            // update this users chat when other user joins
+            else if (data.type == 'userJoin' && data.userID != userInfo._id) {
+                // console.log(data.userID, userInfo._id)
+                // console.log('user is joining the group: ', data)
+                // add new user to contacts
+                dispatch(addContactInfos({ [data.userID]: data.userInfo }))
+
+                // add the userID to the members of the chat
+                setChats(prev => {
+                    return prev.map(chat => {
+                        if (chat.chatID != data.chatID) return chat
+
+                        const members = [...chat.members, data.userID]
+                        if (activeChat && activeChat.chatID == data.chatID) {
+                            setActiveChatInfo({
+                                ...activeChat,
+                                members
+                            })
+                            activeChatHandler(({
+                                ...activeChat,
+                                members
+                            }))
+                        }
+
+                        return {
+                            chatID: data.chatID,
+                            members,
+                            description: chat.description,
+                            name: chat.name,
+                            profile: chat.profile,
+                            type: chat.type
+                        }
+
+                    })
+                })
+
+                // add alert message
+                // if pending messages are present then add in pending messages or in normal messages
+                if (storedMessages.pendingMessages[data.chatID]?.length) {
+                    dispatch(addNewPendingMessage({ chatID: data.chatID, message: data.alertMessage }))
+                } else {
+                    dispatch(addNewMessage({ chatID: data.chatID, message: data.alertMessage }))
+                }
+
+            }
+            // if this is the user which is getting added
+            else if (data.type == 'userJoin' && data.userID == userInfo._id) {
+                // add contact infos of members
+                dispatch(addContactInfos(data.userInfos))
+
+                // add group in the chats
+                const userGroup = structuredClone(data.group)
+                userGroup.members = userGroup.members.map(item => String(item.userID))
+                userGroup.chatID = userGroup._id
+
+                setChats(prev => {
+                    return [...prev, userGroup]
+                })
+
+                // update lastOnline users
+                dispatch(addLastOnlineStatuses(data.lastOnlineStatuses))
+
+                // add online memebrs
+                dispatch(addOnlineUsers(data.onlineMembers))
+            }
+
+        }
+        socket.current.on('group-update', handleGroupUpdate)
+
+        return () => {
+            socket.current.off('group-update', handleGroupUpdate)
+        }
+    }, [chats, activeChat, userInfo])
+
+    // handle update group
+    useEffect(() => {
+        if(!chats.length || !activeChat) return
+
+        socket.current.on('edit-group', editedGroupInfo => {
+            let updatedGroup
+            const updatedChats = chats.map(chat => {
+                if(chat.chatID == editedGroupInfo.chatID) {
+                    const newChat = structuredClone(chat)
+                    newChat.name = editedGroupInfo.name
+                    newChat.description = editedGroupInfo.description,
+                    newChat.profile = editedGroupInfo.profile
+
+                    updatedGroup = newChat
+                    return newChat
+                } else return chat
+            })
+            setChats(updatedChats)
+
+            // update active chat if this is active chat
+            if(editedGroupInfo.chatID == activeChat.chatID) {
+                setActiveChatInfo(updatedGroup)
+                activeChatHandler(updatedGroup)
+            }
+        })
+
+        socket.current.on('delete-chat', response => {
+            setChats(prev => {
+                return prev.filter(chat => chat.chatID != response.chatID)
+            })
+
+            if(activeChat.chatID == response.chatID) {
+                setActiveChatInfo(null)
+                activeChatHandler(null)
+            }
+        })
+
+    }, [chats, activeChat])
+
+
+
     return (
         <div className="flex flex-col w-full flex-1 relative" style={style}>
             <input
@@ -182,7 +354,7 @@ const Chats = ({ style, activeChatHandler }) => {
             {/* Button to add chat and create group chats */}
             <button
                 onClick={toggleOptions}
-                className="absolute bottom-4 right-4 w-14 h-14 bg-blue-500 hover:bg-blue-700 text-white flex items-center justify-center rounded-lg shadow-lg transition duration-200"
+                className="absolute bottom-4 right-4 w-10 h-10 bg-blue-500 hover:bg-blue-700 text-white flex items-center justify-center rounded-lg shadow-lg transition duration-200"
             >
                 <BsChatDotsFill size={24} />
             </button>

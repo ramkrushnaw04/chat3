@@ -77,12 +77,12 @@ export default function Home() {
     return (
         <div className="relative w-screen h-100svh flex items-center bg-white text-black">
 
-            <div className={`left  ${mobile ? (activeChat ? 'hidden' : 'flex') : 'flex'} md:flex relative w-full md:w-1/4 h-100svh flex-col border-r-[1px] border-r-gray-200`}>
+            <div className={`left  ${mobile ? (activeChat ? 'hidden' : 'flex') : 'flex'} md:flex relative w-full md:w-[350px] h-100svh flex-col border-r-[1px] border-r-gray-200`}>
                 <Navbar />
                 <Chats activeChatHandler={handleActiveChat} />
             </div>
 
-            <div className={`right ${mobile ? (activeChat ? 'flex' : 'hidden') : 'flex'} md:flex w-full md:w-3/4 h-100svh`}>
+            <div className={`right ${mobile ? (activeChat ? 'flex' : 'hidden') : 'flex'} md:flex w-full  h-100svh`}>
                 <ChatBox activeChat={activeChat} activeChatHandler={handleActiveChat} />
             </div>
 
