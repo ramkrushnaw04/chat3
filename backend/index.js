@@ -168,6 +168,17 @@ io.on('connection', socket => {
 
     });
 
+
+    socket.on('file-message', async (data, callback) => {
+        try {
+            callback({ res: true })
+        } catch (e) {
+            console.log("error 'file-message': ", e.message)
+            callback({ res: false })
+        }
+    })
+
+
     socket.on('messages-read', async ({ chatID, pendingMessagesIDs }) => {
         // we are sending message sent only to the clients (if online) who sent the message
         // because for the other clients this info is useless
@@ -175,7 +186,6 @@ io.on('connection', socket => {
             for (const { messageID, readerID, senderID } of pendingMessagesIDs) {
                 if (onlineUsers[senderID]) {
                     const socketID = String(onlineUsers[senderID]) // send message to senderID socket
-                    console.log(pendingMessagesIDs)
                     io.to(socketID).emit('update-message', {
                         chatID,
                         messageID,
@@ -284,15 +294,7 @@ io.on('connection', socket => {
         }
     })
 
-    socket.on('file-message', async (data, callback) => {
-        try {
-            callback({ res: true })
-        } catch (e) {
-            console.log("error 'file-message': ", e.message)
-            callback({ res: false })
-        }
-    })
-
+    
     socket.on('update-user-info', async (data, callback) => {
         try {
             const newUser = await User.findByIdAndUpdate(data._id, data.update, { new: true })

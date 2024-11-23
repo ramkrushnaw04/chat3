@@ -18,7 +18,7 @@ export default function Chats() {
     const [userList, setUserList] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const userInfo = useSelector((state) => state.user.userInfo)
-    const [isRequestSent, setIsRequestSent] = useState(false)
+    const isRequestSent = useRef(false)
 
     useEffect(() => {
         socketService.connect();
@@ -45,18 +45,17 @@ export default function Chats() {
 
 
     const handleUserSelect = (user) => {
-        if(isRequestSent) {
-            console.log('requeset alredy sent')
+        if(isRequestSent.current) {
             return
         }
-        
+
         const myUserID = userInfo._id
         const otherID = user._id
 
         // make request only if data is valid
         myUserID && otherID && socket.current.emit('create-chat', { 
             name: 'chatName', 
-            profile: 'chatProfile', 
+            profile: '', 
             userIDs: [myUserID, otherID],
             creationMessgae: `${userInfo.firstName} ${userInfo.lastName} created chat.`
         }, (response) => {
@@ -64,7 +63,7 @@ export default function Chats() {
                 router.push('/')
             }
         })
-        setIsRequestSent(true)
+        isRequestSent.current = false
     };
 
     return (

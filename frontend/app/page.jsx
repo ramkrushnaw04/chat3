@@ -75,7 +75,7 @@ export default function Home() {
                 <Chats activeChatHandler={handleActiveChat} />
             </div>
 
-            <div className={`right ${mobile ? (activeChat ? 'flex' : 'hidden') : 'flex'} md:flex w-full  h-100svh`}>
+            <div className={`right ${mobile ? (activeChat ? 'block' : 'hidden') : 'block w-[calc(100%-350px)]'} w-full  h-100svh`}>
                 <ChatBox activeChat={activeChat} activeChatHandler={handleActiveChat} />
             </div>
 

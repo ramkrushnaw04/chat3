@@ -128,8 +128,8 @@ const ChatHeaderPrivate = ({ data, activeChatHandler }) => {
             </div>
 
             {showPopup && (
-                <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 p-4">
-                    <div ref={popupRef} className="bg-white p-6 rounded-lg w-96 shadow-lg relative">
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 px-4">
+                    <div ref={popupRef} className="bg-white p-6 rounded-lg w-11/12 max-w-96  shadow-lg relative">
                         <button
                             onClick={() => setShowPopup(false)}
                             className="absolute top-2 right-3 text-gray-600 hover:text-gray-800 text-3xl"

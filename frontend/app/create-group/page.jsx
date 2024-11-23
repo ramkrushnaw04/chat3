@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import { AiOutlineClose } from "react-icons/ai";
 import GroupCreation from "./GroupCreation";
 
+
 export default function Page() {
     const router = useRouter();
     let [currentUser] = useAuthState(auth);
@@ -19,6 +20,7 @@ export default function Page() {
     const [searchQuery, setSearchQuery] = useState("");
     const userInfo = useSelector((state) => state.user.userInfo);
     let [user] = useAuthState(auth);
+    
 
     const [selectedGroupUsers, setSelectedGroupUsers] = useState([]);
     const [isCreatingGroup, setIsCreatingGroup] = useState(false);

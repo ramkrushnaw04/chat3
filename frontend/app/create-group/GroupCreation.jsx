@@ -13,6 +13,7 @@ export default function GroupCreation({ selectedUsers, onBack }) {
     const [imagePreview, setImagePreview] = useState(null);
     const socket = useRef(null)
     const userInfo = useSelector((state) => state.user.userInfo)
+    const isRequestSent = useRef(false)
 
     useEffect(() => {
         socketService.connect()
@@ -37,6 +38,8 @@ export default function GroupCreation({ selectedUsers, onBack }) {
     };
 
     const handleCreateGroup = () => {
+        if(isRequestSent.current) return
+
         const userIDs = selectedUsers.map(user => user._id);
         userIDs.push(userInfo._id)
         socket.current.emit('create-chat', {
@@ -54,6 +57,7 @@ export default function GroupCreation({ selectedUsers, onBack }) {
                 router.push('/')
             }
         })
+        isRequestSent.current = true
     };
 
     return (

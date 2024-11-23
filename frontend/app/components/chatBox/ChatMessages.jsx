@@ -15,7 +15,7 @@ const ChatMessages = ({ messages }) => {
     }
 
     return messages && messages.length > 0 ? (
-        <div className="messages flex-1 p-4 overflow-y-auto">
+        <div className="messages flex-1 p-4 overflow-y-auto ">
             {messages.map((msg, index) => {
                 // Update message status to "read" if it meets the condition
                 if (msg.readBy.length >= noOfMembers - 1)

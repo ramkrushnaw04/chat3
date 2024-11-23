@@ -57,7 +57,7 @@ const MembersPopup = ({
         >
             <div
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white w-[400px] max-w-[90vw] p-4 rounded-lg shadow-lg overflow-y-auto"
+                className="bg-white w-11/12 max-w-96 p-4 rounded-lg shadow-lg overflow-y-auto"
                 style={{ maxHeight: '90vh' }}
             >
                 {showUserList ? (

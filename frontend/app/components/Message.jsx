@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
     FaCheck, FaCheckDouble, FaRegClock, FaFilePdf, FaVideo, FaFileImage,
-    FaFileAudio, FaDownload, FaEye, FaReply
+    FaFileAudio, FaDownload, FaEye, FaReply, 
 } from 'react-icons/fa';
-import { AiOutlineDelete } from 'react-icons/ai'
+import { AiOutlineDelete, AiOutlineFile } from 'react-icons/ai'
 import { useDispatch, useSelector } from 'react-redux';
 import { socketService } from './socket/SocketService';
 import { setReplyingToMessage } from '../store/slices/messagesSlice';
+
+
 const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
     const contacts = useSelector((state) => state.contacts);
     const [showReadByPopup, setShowReadByPopup] = useState(false);
@@ -15,6 +17,12 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
     const socket = useRef(null)
     const dispatch = useDispatch()
 
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(1024));
+        return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
+    }
 
     useEffect(() => {
         socketService.connect()
@@ -28,13 +36,13 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
     const getStatusIcon = (status) => {
         switch (status) {
             case 'sent':
-                return <FaCheck className="text-white-400" />;
+                return <FaCheck className="text-white" />;
             case 'delivered':
-                return <FaCheckDouble className="text-white-400" />;
+                return <FaCheckDouble className="text-white" />;
             case 'read':
-                return <FaCheckDouble className="text-white-500" />;
+                return <FaCheckDouble className="text-white" />;
             default:
-                return <FaRegClock className='text-white-400' />;
+                return <FaRegClock className='text-white' />;
         }
     };
 
@@ -65,12 +73,13 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
     const isPdfFile = message.file && message.file.type === 'application/pdf';
     const isAudioFile = message.file && message.file.type.startsWith('audio');
     const isVideoFile = message.file && message.file.type.startsWith('video');
+    const isOtherFile = message.file && message.file.type === ''
 
     const getFileIcon = () => {
-        if (isPdfFile) return <FaFilePdf className="text-white" />;
-        else if (isAudioFile) return <FaFileAudio className="text-white" />;
-        else if (isVideoFile) return <FaVideo className="text-white" />;
-        return <FaFileImage className="text-gray-500" />;
+        if (isPdfFile) return <FaFilePdf className="text-pink-600" />;
+        else if (isAudioFile) return <FaFileAudio className="text-blue-600" />;
+        else if (isVideoFile) return <FaVideo className="text-green-600" />;
+        return <AiOutlineFile className="text-yellow-500" />;
     };
 
     // Function to handle download
@@ -98,7 +107,7 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
     const renderRepliedToMessage = () => {
         if (!message.repliedTo) return null;
 
-        const repliedMessage = message.repliedTo; // Assuming `message.repliedTo` contains the replied-to message object
+        const repliedMessage = message.repliedTo; 
 
         return (
             <div className={`border-l-4 flex gap-2 items-center ${isSentByUser ? 'border-pink-500' : ' border-blue-500'} bg-gray-100 p-2 mb-2 rounded-md text-sm text-gray-900`}>
@@ -118,7 +127,14 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
 
     return (
         <div className={`flex w-full message mb-2 ${isSentByUser ? 'justify-end' : 'justify-start'} group gap-2 items-center`}>
-            {message.file && <div className="hidden group-hover:flex gap-2 h-fit">
+            
+            {/* show the reply button to left its this users message */}
+            {isSentByUser && <button onClick={handleMessageReply} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 hidden group-hover:flex">
+                <FaReply />
+            </button>}
+
+            {/* downlaod,view buttons and reply */}
+            {message.file && isSentByUser && <div className="hidden group-hover:flex gap-2 h-fit">
                 <button onClick={handleDownload} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800">
                     <FaDownload />
                 </button>
@@ -126,28 +142,29 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                     <FaEye />
                 </button>
             </div>}
+
+            {/* delete button */}
             {isSentByUser && <button onClick={handleDelete} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 group-hover:block hidden">
                 <AiOutlineDelete />
             </button>}
 
-            <button onClick={handleMessageReply} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 hidden group-hover:flex">
-                <FaReply />
-            </button>
+            
 
-            <div className="rounded relative max-w-[90%]">
-                <div onClick={togglePopup} className={`${isSentByUser ? 'bg-blue-500 text-white cursor-pointer ' : 'bg-gray-200 text-black'} rounded-md flex flex-col  px-2 py-2`}>
+            <div className="rounded relative  max-w-[80%] ">
+                {!isSentByUser && prevMessageSenderID != message.senderID && activeChatInfo.type === 'group' && (
+                    <div className="flex-shrink-0 m-2 ml-0">
+                        <img
+                            src={contacts[message.senderID]?.profile}
+                            alt="ICON"
+                            className="w-8 h-8 rounded-full"
+                        />
+                    </div>
+                )}
+                
+                <div onClick={togglePopup} className={`w-full  ${isSentByUser ? 'bg-blue-500 text-white  ' : 'bg-gray-200 text-black'} rounded-md flex flex-col  px-2 py-2 cursor-pointer`}>
                     <div > {renderRepliedToMessage()} </div>
-                    <div className="gap-2 flex items-center">
-                        {!isSentByUser && activeChatInfo.type === 'group' && (
-                            <div className="flex-shrink-0 mr-2 ">
-                                <img
-                                    src={contacts[message.senderID]?.profile}
-                                    alt="ICON"
-                                    className="w-8 h-8 rounded-full"
-                                />
-                            </div>
-                        )}
-                        <div className="flex items-end flex-col">
+                    <div className="gap-2 flex w-full items-center">
+                        <div className="flex w-full items-end flex-col">
                             {/* image or icon of file */}
                             {isImageFile && (
                                 <img
@@ -163,7 +180,7 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                             )}
                             {/* text and time */}
                             {message.text && (
-                                <p className={`inline-block w-full mb-1 ${isSentByUser ? 'text-end' : 'text-start'}`}>{message.text}</p>
+                                <p className={`inline-block w-full mb-1 ${isSentByUser ? 'text-end' : 'text-start'} break-words`}>{message.text}</p>
                             )}
                             <div className='flex gap-2 ml-2 text-[0.60rem]'>
                                 {isSentByUser && (<span > {getStatusIcon(message.status)} </span>)}
@@ -175,11 +192,11 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
 
                 {showReadByPopup && (
                     <div
-                        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+                        className="fixed inset-0 bg-black bg-opacity-50  flex items-center justify-center z-50 py-4"
                         onClick={() => setShowReadByPopup(false)}
                     >
                         <div
-                            className="bg-white border rounded-lg shadow-lg p-5 w-80 max-w-full relative"
+                            className="bg-white border rounded-lg shadow-lg p-5 w-11/12 max-h-full overflow-y-scroll max-w-96 relative"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <button
@@ -188,17 +205,60 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                             >
                                 &times;
                             </button>
+
                             {isImageFile && (
-                                <img
-                                    src={message.file.content}
-                                    alt="Message media"
-                                    className="max-w-[250px] rounded-md border border-gray-300 mb-2 m-auto mt-8"
-                                />
+                                <div className='flex flex-col items-start justify-between gap-1'> 
+                                    <img
+                                        src={message.file.content}
+                                        alt="Message media"
+                                        className="max-w-[250px] rounded-md border border-gray-300 mb-2 m-auto mt-8"
+                                    />
+                                    <p className='text-sm'>Name: {message.file.name}</p>
+                                    <p className='text-sm'>Size: {formatBytes(message.file.size)}</p>
+                                </div>
                             )}
+
+                            {isPdfFile && <div className='flex flex-col items-start justify-between gap-1'>
+                                <FaFilePdf className='w-10 h-10 text-pink-600' />
+                                <p className='text-sm'>Name: {message.file.name}</p>
+                                <p className='text-sm'>Size: {formatBytes(message.file.size)}</p>
+                            </div> }
+
+                            {isAudioFile && (
+                                <div className='flex flex-col items-start justify-between gap-1'>
+                                    <FaFileAudio className='w-10 h-10 text-blue-500' />
+                                    <p className='text-sm'>Name: {message.file.name}</p>
+                                    <p className='text-sm'>Size: {formatBytes(message.file.size)}</p>
+                                </div>
+                            )}
+
+                            {isVideoFile && (
+                                <div className='flex flex-col items-start justify-between gap-1'>
+                                    <FaVideo className='w-10 h-10 text-green-500' />
+                                    <p className='text-sm'>Name: {message.file.name}</p>
+                                    <p className='text-sm'>Size: {formatBytes(message.file.size)}</p>
+                                </div>
+                            )}
+
+                            {isOtherFile && (
+                                <div className='flex flex-col items-start justify-between gap-1'>
+                                    <AiOutlineFile className='w-10 h-10 text-yellow-500' />
+                                    <p className='text-sm'>Name: {message.file.name}</p>
+                                    <p className='text-sm'>Size: {formatBytes(message.file.size)}</p>
+                                </div>
+                            )}
+
                             {message.text && <div className="mb-4 text-left">
                                 <p className="text-sm font-semibold text-gray-800 mb-2">Message:</p>
-                                <p className="bg-gray-100 text-gray-700 p-2 rounded-md">{message.text}</p>
+                                <p className="bg-gray-100 text-gray-700 p-2 rounded-md break-words">{message.text}</p>
                             </div>}
+
+                            <div className='flex gap-2 items-center justify-end text-xs'>
+                                {isSentByUser && (<span > {getStatusIcon(message.status)} </span>)}
+                                <p>{isSentByUser ? 'Sent at' : 'Recieved at: '} {formatTime(message.sentAt)}</p>
+                            </div>
+
+
                             {readByUsers.length > 0 && isSentByUser && (
                                 <div className="mb-4">
                                     <h3 className="font-semibold text-sm text-gray-700 mb-2 text-left">Read by:</h3>
@@ -237,6 +297,22 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                     </div>
                 )}
             </div>
+
+
+            {/* show the reply button to right its not this users message */}
+            {!isSentByUser && <button onClick={handleMessageReply} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 hidden group-hover:flex">
+                <FaReply />
+            </button>}
+
+            {message.file && !isSentByUser && <div className="hidden group-hover:flex gap-2 h-fit">
+                <button onClick={handleDownload} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800">
+                    <FaDownload />
+                </button>
+                <button onClick={handleView} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800">
+                    <FaEye />
+                </button>
+            </div>}
+
         </div>
     );
 };
