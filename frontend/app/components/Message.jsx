@@ -118,7 +118,7 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
 
     return (
         <div className={`flex w-full message mb-2 ${isSentByUser ? 'justify-end' : 'justify-start'} group gap-2 items-center`}>
-            {message.file && isSentByUser && <div className="hidden group-hover:flex gap-2 h-fit">
+            {message.file && <div className="hidden group-hover:flex gap-2 h-fit">
                 <button onClick={handleDownload} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800">
                     <FaDownload />
                 </button>
