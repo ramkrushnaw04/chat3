@@ -154,7 +154,7 @@ const Chats = ({ style, activeChatHandler }) => {
         if (!activeChat || !storedMessages || storedMessages[activeChat.chatID]) return
 
         for (const chat of chats) {
-            socket.current.emit('get-all-messages-of-chat', { chatID: chat.chatID }, (response) => {
+            socket.current.emit('get-all-messages-of-chat', { chatID: chat.chatID, userID: userInfo._id }, (response) => {
                 // read messages are read by this user (we consider messages sent by this user as read)
                 const readMessages = response.filter(item => item.readBy.includes(userInfo._id) || item.senderID == userInfo._id)
                 // pending messages are messages that are yet to be read by this user
@@ -342,7 +342,7 @@ const Chats = ({ style, activeChatHandler }) => {
 
 
     return (
-        <div className="flex flex-col w-full flex-1 relative" style={style}>
+        <div className="flex flex-col md:w-[350px] flex-1 relative" style={style}>
             <input
                 type="text"
                 placeholder="Search People..."

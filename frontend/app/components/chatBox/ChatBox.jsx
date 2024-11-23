@@ -26,7 +26,7 @@ const ChatBox = ({ activeChat, activeChatHandler }) => {
 
 
         function receiveMessage(data) {
-            // console.log('recieved message: ', data)
+            console.log('recieved message: ', data)
             const chatID = activeChat ? activeChat.chatID : null
             // if message is sent to current chat, add current user to readBy of the message
             if (chatID == data.chatID) {

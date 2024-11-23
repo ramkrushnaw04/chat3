@@ -7,7 +7,8 @@ const initialState = {
     },
     lastMessages: {
 
-    }
+    },
+    replyingTo: null 
 }
 
 export const messagesSlice = createSlice({
@@ -65,10 +66,15 @@ export const messagesSlice = createSlice({
                 state[chatID] = [...state[chatID], ...messages]
             }
         },
+        setReplyingToMessage: (state, action) => {
+            state.replyingTo = action.payload
+        }
     }
 })
 
 
-export const { setMessages, addNewMessage, addNewPendingMessage, resetPendingMessages, addMultipleNewMessage, setMessagesInBatch, setPendingMessages } = messagesSlice.actions
+export const { setMessages, addNewMessage, addNewPendingMessage, 
+    resetPendingMessages, addMultipleNewMessage, setMessagesInBatch, 
+    setPendingMessages, setReplyingToMessage } = messagesSlice.actions
 
 export default messagesSlice.reducer

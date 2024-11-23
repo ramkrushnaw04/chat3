@@ -1,9 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FiPaperclip, FiSend, FiX } from 'react-icons/fi';
-import { addNewMessage } from '@/app/store/slices/messagesSlice';
+import { addNewMessage, setReplyingToMessage } from '@/app/store/slices/messagesSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { socketService } from '../socket/SocketService';
 import { v4 } from 'uuid';
+import {
+    FaCheck, FaCheckDouble, FaRegClock, FaFilePdf, FaVideo, FaFileImage,
+    FaFileAudio, FaDownload, FaEye, FaReply
+} from 'react-icons/fa';
 
 const ChatInput = ({ activeChatID }) => {
     const [message, setMessage] = useState("");
@@ -17,6 +21,7 @@ const ChatInput = ({ activeChatID }) => {
     const userInfo = useSelector((state) => state.user.userInfo);
     const typingTimeout = useRef(null);
     const isUserTyping = useRef(false);
+    const replyingTo = useSelector(state => state.messages.replyingTo)
 
     useEffect(() => {
         socketService.connect();
@@ -33,12 +38,14 @@ const ChatInput = ({ activeChatID }) => {
             senderID: userInfo._id,
             ID: v4(),
             status: '',
-            readBy: []
+            readBy: [],
+            repliedTo: replyingTo
         };
         hideTypingIndicator();
         socket.current.emit('message', { room: activeChatID, messageData });
         dispatch(addNewMessage({ chatID: activeChatID, message: messageData }));
         setMessage('');
+        dispatch(setReplyingToMessage(null))
     }
 
     function handleFileSelect(event) {
@@ -87,16 +94,16 @@ const ChatInput = ({ activeChatID }) => {
                 ID: v4(),
                 status: '',
                 readBy: [],
-                file: fileData
+                file: fileData,
+                repliedTo: replyingTo
             }
-            socket.current.emit('message', { room: activeChatID, messageData: messageWithFile }, (response) => {
-                console.log(response);
-            });
+            socket.current.emit('message', { room: activeChatID, messageData: messageWithFile });
 
             dispatch(addNewMessage({ chatID: activeChatID, message: messageWithFile }));
             setSelectedFile(null); // clear selected file
             setShowConfirmation(false); // hide confirmation screen
             setFileMessage(""); // Clear the message input
+            dispatch(setReplyingToMessage(null))
         };
         reader.readAsDataURL(selectedFile);
     }
@@ -134,6 +141,34 @@ const ChatInput = ({ activeChatID }) => {
 
     return (
         <>
+            {/* Replied Message Display */}
+            {replyingTo && (
+                <div className="replied-message bg-gray-100 px-4 h-14 rounded-md flex items-center justify-between">
+
+                    <div className="flex items-center">
+                        {!replyingTo.file && (
+                            <span className="text-sm text-gray-700">{replyingTo.text}</span>
+                        )}
+                        {replyingTo.file && replyingTo.file.type.startsWith('image') && (
+                            <div className="flex items-center">
+                                <img
+                                    src={replyingTo.file.content}
+                                    alt="Replied Image"
+                                    className="w-10 h-10 object-cover mr-2 rounded-md"
+                                />
+                                <span className="text-sm text-gray-700">{replyingTo.text || "Image"}</span>
+                            </div>
+                        )}
+                    </div>
+                    <button
+                        className="ml-2 text-gray-500 hover:text-gray-700"
+                        onClick={() => dispatch(setReplyingToMessage(null))}
+                    >
+                        <FiX size={16} />
+                    </button>
+                </div>
+            )}
+    
             <form onSubmit={handleSendMessage} className="input-area flex items-center p-3 border-t">
                 <label
                     htmlFor="file-upload"
@@ -161,12 +196,12 @@ const ChatInput = ({ activeChatID }) => {
                     <FiSend size={18} />
                 </button>
             </form>
-
+    
             {/* Error Message */}
             {errorMessage && (
                 <div className="text-red-500 text-sm mt-2">{errorMessage}</div>
             )}
-
+    
             {/* Confirmation Screen */}
             {showConfirmation && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-10">
@@ -199,7 +234,7 @@ const ChatInput = ({ activeChatID }) => {
                                 <p className="text-gray-500">No preview available for this file type</p>
                             </div>
                         )}
-
+    
                         {/* Text field for file message */}
                         <div className="mb-4">
                             <input
@@ -210,7 +245,7 @@ const ChatInput = ({ activeChatID }) => {
                                 className="w-full p-2 border rounded-md"
                             />
                         </div>
-
+    
                         <button
                             onClick={handleSendFile}
                             className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
@@ -222,6 +257,7 @@ const ChatInput = ({ activeChatID }) => {
             )}
         </>
     );
+    
 };
 
 export default ChatInput;

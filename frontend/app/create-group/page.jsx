@@ -11,7 +11,7 @@ import { useSelector } from "react-redux";
 import { AiOutlineClose } from "react-icons/ai";
 import GroupCreation from "./GroupCreation";
 
-export default function page() {
+export default function Page() {
     const router = useRouter();
     let [currentUser] = useAuthState(auth);
     const storedUserData = localStorage.getItem('chat3UserInfo');

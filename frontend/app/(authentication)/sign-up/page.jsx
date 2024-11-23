@@ -73,7 +73,7 @@ export default function SignUp() {
                 <div className="w-32 h-32 my-5">
                     <input id="profileSelector" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                     <label htmlFor="profileSelector" >
-                        <img src={profileImage || "images/blank-profile-picture.webp"} className="w-full h-full rounded-3xl" alt="Profile" />
+                        <img src={profileImage || "images/blank-profile-picture.webp"} className="w-full h-full rounded-3xl cursor-pointer" alt="Profile" />
                     </label>
                 </div>
                 <input className="px-5 py-3 w-full bg-gray-300 rounded-lg" name="firstName" type="text" placeholder="First Name" required />

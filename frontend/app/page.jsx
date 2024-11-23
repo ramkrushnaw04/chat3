@@ -10,6 +10,8 @@ import Chats from "./components/chats/Chats";
 import { setUserInfo } from "./store/slices/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import ChatBox from "./components/chatBox/ChatBox";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Home() {
     const router = useRouter();
@@ -62,11 +64,16 @@ export default function Home() {
                     if (response) {
                         dispatch(setUserInfo(response));
                         localStorage.setItem('chat3UserInfo', JSON.stringify(response));
-                    }
+                    } 
+                    // else {
+                    //     console.log('user aready logged in on another device')
+                    //     router.push('/log-in');
+                    //     toast("Already logged in on another device.")
+                    // }
                 }
             );
         }
-    }, [user, storedUser, socket.current, dispatch]);
+    }, [user, storedUser]);
 
 
     function handleActiveChat(data) {
@@ -85,6 +92,8 @@ export default function Home() {
             <div className={`right ${mobile ? (activeChat ? 'flex' : 'hidden') : 'flex'} md:flex w-full  h-100svh`}>
                 <ChatBox activeChat={activeChat} activeChatHandler={handleActiveChat} />
             </div>
+
+            <div className="fixed bottom-3 right-3"><ToastContainer/></div>
 
         </div>
 

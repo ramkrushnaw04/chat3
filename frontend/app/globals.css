@@ -25,3 +25,11 @@ body {
     text-wrap: balance;
   }
 }
+
+.truncate {
+    display: inline-block;
+    max-width: 200px;  /* Set max-width as per your container's width */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
