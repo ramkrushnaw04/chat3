@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ChatBox from "./components/chatBox/ChatBox";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import axios from "axios";
 
 export default function Home() {
     const router = useRouter();
@@ -21,6 +22,7 @@ export default function Home() {
     const [activeChat, setActiveChat] = useState(null)
     const mobileWidth = 768
     const [mobile, setMobile] = useState(false)
+    const [isAppActive, setIsAppActive] = useState(false)
 
     useEffect(() => {
         socketService.connect();
@@ -31,6 +33,14 @@ export default function Home() {
         }
         handleResize() // to resize the window when applicaiton is loaded
         window.addEventListener('resize', handleResize)
+
+        // show app only after getting response from backend
+        const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL
+        axios.get(BACKEND_URL + '/test')
+            .then(() => {
+                setIsAppActive(true)
+            })
+
         return () => {
             window.removeEventListener('resize', handleResize)
         };
@@ -50,7 +60,7 @@ export default function Home() {
                     if (response) {
                         dispatch(setUserInfo(response));
                         localStorage.setItem('chat3UserInfo', JSON.stringify(response));
-                    } 
+                    }
                     else {
                         // console.log('user aready logged in on another ')
                         router.push('/log-in');
@@ -68,7 +78,7 @@ export default function Home() {
 
 
     return (
-        <div className="relative w-screen h-100svh flex items-center bg-white text-black">
+        isAppActive ? <div className="relative w-screen h-100svh flex items-center bg-white text-black">
 
             <div className={`left  ${mobile ? (activeChat ? 'hidden' : 'flex') : 'flex'} md:flex relative w-full md:w-[350px] h-100svh flex-col border-r-[1px] border-r-gray-200`}>
                 <Navbar />
@@ -79,9 +89,16 @@ export default function Home() {
                 <ChatBox activeChat={activeChat} activeChatHandler={handleActiveChat} />
             </div>
 
-            <ToastContainer position="bottom-right" theme="light"  />
+            <ToastContainer position="bottom-right" theme="light" />
 
+        </div> 
+        : <div className="fixed inset-0 flex items-center justify-center bg-gray-100 z-50">
+            <div className="flex items-center justify-center gap-2">
+                <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                <p className="text-lg font-semibold text-gray-600">Connecting to the server...</p>
+            </div>
         </div>
+
 
     );
 }

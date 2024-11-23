@@ -27,6 +27,9 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
     useEffect(() => {
         socketService.connect()
         socket.current = socketService.getSocket()
+
+        
+
     }, [])
 
     const togglePopup = () => {

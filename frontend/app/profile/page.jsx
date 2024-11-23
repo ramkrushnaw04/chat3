@@ -9,6 +9,8 @@ import Navbar from '../components/NavBar';
 import { setUserInfo } from '../store/slices/userSlice';
 import { socketService } from '../components/socket/SocketService';
 import { FaSignOutAlt, FaUser } from "react-icons/fa";
+import axios from 'axios';
+import { signOut } from 'firebase/auth';
 
 const Profile = () => {
     const router = useRouter();
@@ -24,10 +26,20 @@ const Profile = () => {
         profile: '',
     });
     const [previewImage, setPreviewImage] = useState(''); // Preview for uploaded image
+    const [isAppActive, setIsAppActive] = useState(false)
+
 
     useEffect(() => {
         socketService.connect();
         socket.current = socketService.getSocket();
+
+        // show app only after getting response from backend
+        const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL
+        axios.get(BACKEND_URL + '/test')
+            .then(() => {
+                setIsAppActive(true)
+            })
+
     }, []);
 
     useEffect(() => {
@@ -91,7 +103,7 @@ const Profile = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        isAppActive ? <div className="min-h-screen bg-gray-50 flex flex-col">
             <Navbar />
             <div className="flex flex-col items-center justify-center mt-10">
                 <div className="bg-white rounded-lg shadow-lg w-80 p-6 flex flex-col items-center">
@@ -203,6 +215,13 @@ const Profile = () => {
                     </div>
                 </div>
             )}
+        </div> 
+        :
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-100 z-50">
+            <div className="flex items-center justify-center gap-2">
+                <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                <p className="text-lg font-semibold text-gray-600">Connecting to the server...</p>
+            </div>
         </div>
     );
 };

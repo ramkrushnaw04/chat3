@@ -6,7 +6,7 @@ import { socketService } from "../../components/socket/SocketService";
 import { useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserInfo } from "@/app/store/slices/userSlice";
-
+import axios from "axios";
 
 export default function SignUp() {
 
@@ -14,10 +14,18 @@ export default function SignUp() {
     const socket = useRef(null)
     const dispatch = useDispatch()
     const [profileImage, setProfileImage] = useState(null)
+    const [isAppActive, setIsAppActive] = useState(false)
 
     useEffect(() => {
         socketService.connect()
         socket.current = socketService.getSocket()
+
+        // show app only after getting response from backend
+        const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL
+        axios.get(BACKEND_URL + '/test')
+            .then(() => {
+                setIsAppActive(true)
+            })
     }, [])
     
     // Sign up
@@ -67,7 +75,7 @@ export default function SignUp() {
     }
 
     return (
-        <div className="w-screen h-100svh flex flex-col gap-20 justify-center items-center bg-white text-black">
+        isAppActive ? <div className="w-screen h-100svh flex flex-col gap-20 justify-center items-center bg-white text-black">
             <form onSubmit={handleSignup} className="flex w-4/5 max-w-64 flex-col justify-center items-center gap-5">
                 <h1 className="font-bold text-xl">Sign Up</h1>
                 <div className="w-32 h-32 my-5">
@@ -83,6 +91,14 @@ export default function SignUp() {
                 <button className="px-5 py-3 text-white rounded-lg bg-blue-700" type="submit">Sign Up</button>
                 <button onClick={() => router.push('/log-in')} className="text-xs hover:text-blue-400 underline underline-offset-2">Already have an account? Log in here.</button>
             </form>
+        </div> 
+        : 
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-100 z-50">
+            <div className="flex items-center justify-center gap-2">
+                <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                <p className="text-lg font-semibold text-gray-600">Connecting to the server...</p>
+            </div>
         </div>
+
     )
 }

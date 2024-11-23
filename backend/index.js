@@ -544,6 +544,10 @@ app.post('/get-messages-of-group', async (req, res) => {
     res.send(response);
 });
 
+app.get('/test', (req, res) => {
+    res.send({res: true})
+})
+
 server.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
 });
