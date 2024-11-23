@@ -89,16 +89,17 @@ const ChatHeaderGroup = ({ data, activeChatHandler }) => {
                     )}
                 </div>
             </div>
-
-            <MembersPopup
-                isOpen={isModalOpen}
-                onClose={toggleModal}
-                onlineMembers={onlineMembersInCurrentChat}
-                offlineMembers={offlineMembersInCurrentChat}
-                mobile={mobile}
-                userInfo={userInfo}
-                groupInfo={data}
-            />
+            
+            {isModalOpen && 
+                <MembersPopup
+                    onClose={toggleModal}
+                    onlineMembers={onlineMembersInCurrentChat}
+                    offlineMembers={offlineMembersInCurrentChat}
+                    mobile={mobile}
+                    userInfo={userInfo}
+                    groupInfo={data}
+                />
+            }
         </>
     );
 };

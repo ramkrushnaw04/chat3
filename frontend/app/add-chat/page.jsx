@@ -14,7 +14,6 @@ import { useSelector } from "react-redux";
 export default function Chats() {
     const router = useRouter();
     let [currentUser] = useAuthState(auth);
-    const storedUserData = localStorage.getItem('chat3UserInfo');
     const socket = useRef(null);
     const [userList, setUserList] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
@@ -33,12 +32,15 @@ export default function Chats() {
 
     }, [searchQuery])
 
+    
+    useEffect(() => {
+        const storedUser = localStorage.getItem('chat3UserInfo');
 
-    if (!currentUser && !storedUserData) {
-        router.push('/log-in');
-    } else {
-        currentUser = storedUserData;
-    }
+        if (!currentUser && !storedUser) {
+            router.push('/log-in');
+        } 
+    }, [currentUser]);
+
 
 
     const handleUserSelect = (user) => {

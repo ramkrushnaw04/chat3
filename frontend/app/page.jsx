@@ -16,7 +16,6 @@ import 'react-toastify/dist/ReactToastify.css';
 export default function Home() {
     const router = useRouter();
     let [user] = useAuthState(auth);
-    const storedUser = localStorage.getItem('chat3UserInfo');
     const socket = useRef(null);
     const dispatch = useDispatch()
     const [activeChat, setActiveChat] = useState(null)
@@ -27,33 +26,20 @@ export default function Home() {
     useEffect(() => {
         socketService.connect();
         socket.current = socketService.getSocket();
-
-
         // for width calculation
         function handleResize() {
             setMobile(window.innerWidth < mobileWidth ? true : false)
         }
         window.addEventListener('resize', handleResize)
-
-
-
         return () => {
             window.removeEventListener('resize', handleResize)
         };
     }, []);
 
 
-    // if (!user && !storedUser) {
-    //     router.push('/log-in');
-    // } else {
-    //     socket.current && socket.current.emit('get-user-info-form-authID', { authID: user.uid }, (response) => {
-    //         dispatch(setUserInfo(response))
-    //         user = storedUser;
-    //     })
-    // }
-
-
     useEffect(() => {
+        const storedUser = localStorage.getItem('chat3UserInfo');
+
         if (!user && !storedUser) {
             router.push('/log-in');
         } else if (user && socket.current) {
@@ -73,7 +59,7 @@ export default function Home() {
                 }
             );
         }
-    }, [user, storedUser]);
+    }, [user]);
 
 
     function handleActiveChat(data) {

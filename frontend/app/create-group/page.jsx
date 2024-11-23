@@ -14,11 +14,11 @@ import GroupCreation from "./GroupCreation";
 export default function Page() {
     const router = useRouter();
     let [currentUser] = useAuthState(auth);
-    const storedUserData = localStorage.getItem('chat3UserInfo');
     const socket = useRef(null);
     const [userList, setUserList] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const userInfo = useSelector((state) => state.user.userInfo);
+    let [user] = useAuthState(auth);
 
     const [selectedGroupUsers, setSelectedGroupUsers] = useState([]);
     const [isCreatingGroup, setIsCreatingGroup] = useState(false);
@@ -38,11 +38,15 @@ export default function Page() {
         });
     }, [searchQuery]);
 
-    if (!currentUser && !storedUserData) {
-        router.push('/log-in');
-    } else {
-        currentUser = storedUserData;
-    }
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem('chat3UserInfo');
+
+        if (!currentUser && !storedUser) {
+            router.push('/log-in');
+        } 
+    }, [currentUser]);
+
 
     const handleUserSelect = (user) => {
         setSelectedGroupUsers(prevSelectedUsers => [...prevSelectedUsers, user]);
