@@ -20,7 +20,6 @@ const lastOnlineUserSchema = require('./models/LastOnlineUserSchema');
 const LastOnlineUser = mongoose.model('LastOnlineUser', lastOnlineUserSchema);
 
 const messageSchema = require('./models/MessageSchema');
-const { group } = require('console');
 const Message = mongoose.model('Message', messageSchema)
 
 const server = createServer(app);
@@ -48,6 +47,11 @@ io.on('connection', socket => {
 
     socket.on('get-user-info-form-authID', async (data, callback) => {
         const user = await User.find({ authID: data.authID });
+        // // check if user is already online on another device 
+        // console.log(data)
+        // if(onlineUsers[user[0]._id]) {
+        //     callback(false)
+        // }
         // mark the user as online here
         const userID = String(user[0]._id)
         onlineUsers[userID] = socket.id
@@ -90,6 +94,7 @@ io.on('connection', socket => {
             const userGroup = new UserGroup({
                 userID: user.userID,
                 groupID: groupChat._id,
+                joinedAt: Date.now()
             });
             return userGroup.save();
         });
@@ -129,8 +134,17 @@ io.on('connection', socket => {
                 status: 'sent',
             });
             await message.save();
-            socket.to(room).emit('message', message);
-            socket.emit('update-message', { messageID: messageData.ID, status: 'sent', chatID: messageData.chatID, type: 'sent', _id: message._id })
+            const messageToSend = message.toObject()
+            messageToSend.repliedTo = messageData.repliedTo
+
+            socket.to(room).emit('message', messageToSend);
+            socket.emit('update-message', { 
+                messageID: messageData.ID, 
+                status: 'sent', 
+                chatID: messageData.chatID, 
+                type: 'sent', 
+                _id: message._id,
+            })
         }, 0);
     });
 
@@ -210,13 +224,17 @@ io.on('connection', socket => {
         callback(lastOnlineStatuses)
     })
 
-    socket.on('get-all-messages-of-chat', async ({ chatID }, callback) => {
-        const messages = await Message.getMessagesOfChat(chatID)
+    socket.on('get-all-messages-of-chat', async ({ chatID, userID }, callback) => {
+        const userGroup = await UserGroup.find({
+            userID,
+            groupID: chatID
+        })
+        const joinedAt = userGroup[0]?.joinedAt
+        const messages = await Message.getMessagesOfChat(chatID, joinedAt)
         callback(messages)
     })
 
     socket.on('file-message', async (data, callback) => {
-        console.log(data)
         callback({ res: true })
     })
 
@@ -265,7 +283,12 @@ io.on('connection', socket => {
         // create userGroup only when there is none already
         const userGroupAlready = await UserGroup.find({ userID, groupID: chatID })
         if (!userGroupAlready.length) {
-            const userGroup = await UserGroup({ userID, groupID: chatID })
+            const userGroup = await UserGroup(
+                { 
+                    userID, 
+                    groupID: chatID,
+                    joinedAt: Date.now()
+                })
             await userGroup.save()
         } else {
             // callback({message: 'user already in group'})

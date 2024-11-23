@@ -56,15 +56,26 @@ const messageSchema = Schema({
     type: {
         type: String,
         default: 'text'
+    },
+    repliedTo: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'Message',
+        default: null
     }
 })
 
 
 
 
-messageSchema.statics.getMessagesOfChat = async function (chatID) {
+
+
+messageSchema.statics.getMessagesOfChat = async function (chatID, joinedAt) {
     if (chatID == '') return
-    const messages = await this.where('chatID').equals(chatID)
+    const messages = await this
+        .where('chatID').equals(chatID)
+        .where('sentAt').gte(joinedAt)
+        .populate('repliedTo')
+        .sort({sentAt: 1})
     return messages
 }
 
@@ -83,5 +94,7 @@ messageSchema.statics.markMessagesAsRead = async function (messages) {
     }
 }
 
+
+const Message = model('Message', messageSchema)
 
 module.exports = messageSchema

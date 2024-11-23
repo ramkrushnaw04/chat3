@@ -16,13 +16,12 @@ const userGroupSchema = Schema({
     groupID: {
         type: mongoose.SchemaTypes.ObjectId,
         ref: 'GroupChat'
+    },
+    joinedAt: {
+        type: Date
     }
 })
 
-
-userGroupSchema.statics.alreadyExists = async function (userIDs) {
-    
-}
 
 
 userGroupSchema.statics.getAllUserGroups = async function (userID) {
