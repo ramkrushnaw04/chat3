@@ -6,7 +6,6 @@ import { useSelector } from 'react-redux';
 import { socketService } from '../../socket/SocketService';
 
 const MembersPopup = ({
-    isOpen,
     onClose,
     onlineMembers,
     offlineMembers,
@@ -14,7 +13,6 @@ const MembersPopup = ({
     groupInfo,
 }) => {
     const contacts = useSelector((state) => state.contacts);
-    if (!isOpen) return null;
     const [showUserList, setShowUserList] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [userList, setUserList] = useState([]);
