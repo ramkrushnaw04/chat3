@@ -115,7 +115,7 @@ export default function GroupCreation({ selectedUsers, onBack }) {
             <div className="mt-6 w-11/12 max-w-md flex flex-wrap items-center gap-2">
                 <h2 className="font-semibold">Members:</h2>
                 <div className="flex items-center space-x-2 p-2 border border-gray-300 rounded-full bg-gray-100">
-                    <img src={userInfo.profile} alt={userInfo.firstName} className="w-8 h-8 rounded-full" />
+                    <img src={userInfo.profile || 'images/user-profile.jpg'} alt={userInfo.firstName} className="w-8 h-8 rounded-full" />
                     <span className="text-sm">You</span>
                 </div>
                 {selectedUsers.map(user => (

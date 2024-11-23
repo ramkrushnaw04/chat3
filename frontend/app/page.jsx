@@ -29,6 +29,7 @@ export default function Home() {
         function handleResize() {
             setMobile(window.innerWidth < mobileWidth ? true : false)
         }
+        handleResize() // to resize the window when applicaiton is loaded
         window.addEventListener('resize', handleResize)
         return () => {
             window.removeEventListener('resize', handleResize)
@@ -50,11 +51,11 @@ export default function Home() {
                         dispatch(setUserInfo(response));
                         localStorage.setItem('chat3UserInfo', JSON.stringify(response));
                     } 
-                    // else {
-                    //     console.log('user aready logged in on another device')
-                    //     router.push('/log-in');
-                    //     toast("Already logged in on another device.")
-                    // }
+                    else {
+                        // console.log('user aready logged in on another ')
+                        router.push('/log-in');
+                        // toast("Error loggin in, please login again.")
+                    }
                 }
             );
         }
@@ -78,7 +79,7 @@ export default function Home() {
                 <ChatBox activeChat={activeChat} activeChatHandler={handleActiveChat} />
             </div>
 
-            <div className="fixed bottom-3 right-3"><ToastContainer/></div>
+            <ToastContainer position="bottom-right" theme="light"  />
 
         </div>
 

@@ -342,11 +342,11 @@ const Chats = ({ style, activeChatHandler }) => {
 
 
     return (
-        <div className="flex flex-col md:w-[350px] flex-1 relative" style={style}>
+        <div className="flex flex-col md:w-[350px] flex-1 relative overflow-y-scroll " style={style}>
             <input
                 type="text"
                 placeholder="Search People..."
-                className="px-3 w-auto m-4 bg-gray-200 text-black border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-14 "
+                className="px-3 w-auto m-4 bg-gray-200 text-black border-none rounded-lg focus:outline-none  h-10 text-sm "
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -354,7 +354,7 @@ const Chats = ({ style, activeChatHandler }) => {
             {/* Button to add chat and create group chats */}
             <button
                 onClick={toggleOptions}
-                className="absolute bottom-4 right-4 w-10 h-10 bg-blue-500 hover:bg-blue-700 text-white flex items-center justify-center rounded-lg shadow-lg transition duration-200"
+                className="absolute bottom-4 right-4 w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center rounded-lg shadow-2xl transition duration-200"
             >
                 <BsChatDotsFill size={24} />
             </button>
@@ -377,7 +377,7 @@ const Chats = ({ style, activeChatHandler }) => {
                 </div>
             )}
 
-            <div className="px-4 gap-3 flex flex-col overflow-y-scroll">
+            <div className="px-4 gap-3 flex flex-col overflow-y-scroll flex-1 pb-20">
                 {userInfo && filteredChats.length > 0 ? (
                     filteredChats.map((chat) => (
                         <ChatsItem
@@ -388,7 +388,7 @@ const Chats = ({ style, activeChatHandler }) => {
                         />
                     ))
                 ) : (
-                    <p className="text-center text-gray-500 mt-4">No chats found.</p>
+                    <p className="text-center text-gray-500 mt-4 w-full h-full flex justify-center items-center">No chats found.</p>
                 )}
             </div>
 

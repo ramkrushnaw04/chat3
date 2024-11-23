@@ -75,7 +75,7 @@ const MembersPopup = ({
                         <ul>
                             {userList.map(user => (
                                 <li key={user._id} className="flex items-center p-4 border-b">
-                                    <img src={user.profile} alt={user.firstName} className="w-10 h-10 rounded-full mr-4" />
+                                    <img src={user.profile || "images/user-profile.jpg"} alt={user.firstName} className="w-10 h-10 rounded-full mr-4" />
                                     <div>
                                         <span className="block font-medium">{user.firstName} {user.lastName}</span>
                                         <span className="block text-sm text-gray-500">{user.email}</span>
@@ -98,7 +98,7 @@ const MembersPopup = ({
                             </button>
 
                             <div className="flex flex-col items-center justify-center gap-4">
-                                <img className="w-14 h-14 rounded-full" src={groupInfo.profile} alt="ICON" />
+                                <img className="w-14 h-14 rounded-full" src={groupInfo.profile || "images/group-profile.svg"} alt="ICON" />
                                 <h2 className="text-lg font-semibold">{groupInfo.name}</h2>
                                 <p className="text-gray-500 text-sm">{groupInfo.description}</p>
                             </div>
@@ -116,7 +116,7 @@ const MembersPopup = ({
                                         >
                                             <div className="relative mr-4">
                                                 <img
-                                                    src={user.profile}
+                                                    src={user.profile || "images/user-profile.jpg"}
                                                     alt={user.firstName}
                                                     className="w-10 h-10 rounded-full"
                                                 />

@@ -13,17 +13,17 @@ const SearchedUser = ({ users, searchQuery, onSelectUser }) => {
         );
 
     return (
-        <div className="mt-5 w-11/12 max-w-md ">
+        <div className="mt-5 w-11/12 max-w-md overflow-y-scroll pb-20">
             {filteredUsers.length > 0 ? (
-                <ul className="bg-white rounded-lg shadow-md ">
+                <ul className="bg-white  shadow-md ">
                     {filteredUsers.map(user => (
                         <li
                             key={user._id}
-                            className="flex items-center p-4 border-b hover:bg-gray-100 transition duration-200 cursor-pointer"
+                            className="flex items-center p-4 border-b rounded-lg hover:bg-gray-100 transition duration-200 cursor-pointer"
                             onClick={() => onSelectUser(user)}
                         >
                             <img
-                                src={user.profile == '' ? '/images/blank-profile-picture.webp' : user.profile}
+                                src={user.profile == '' || !user.profile ? "images/user-profile.jpg" : user.profile}
                                 alt={`${user.firstName} ${user.lastName}`}
                                 className="w-12 h-12 rounded-full mr-4"
                             />

@@ -116,7 +116,7 @@ export default function Page() {
                         <div
                             className="flex items-center space-x-2 p-2 border border-gray-300 rounded-full bg-gray-100"
                         >
-                            <img src={userInfo.profile} alt="YOU" className="w-8 h-8 rounded-full" />
+                            <img src={userInfo.profile || 'images/user-profile.jpg'} alt="YOU" className="w-8 h-8 rounded-full" />
                             <span className="text-sm">You</span>
                         </div>
 
@@ -126,7 +126,7 @@ export default function Page() {
                                     key={user._id}
                                     className="flex items-center space-x-2 p-2 border border-gray-300 rounded-full bg-gray-100"
                                 >
-                                    <img src={user.profile} alt={user.firstName} className="w-8 h-8 rounded-full" />
+                                    <img src={user.profile || 'images/user-profile.jpg'} alt={user.firstName} className="w-8 h-8 rounded-full" />
                                     <span className="text-sm">{user.firstName + ' ' + user.lastName}</span>
                                     <button onClick={() => handleRemoveUser(user._id)} className="text-gray-500 hover:text-gray-700">
                                         <AiOutlineClose className="w-4 h-4" />

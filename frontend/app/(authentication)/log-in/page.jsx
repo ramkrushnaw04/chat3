@@ -5,7 +5,7 @@ import { auth } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { socketService } from "@/app/components/socket/SocketService";
-
+import { ToastContainer, toast } from 'react-toastify';
 
 export default function LogIn() {
 
@@ -23,15 +23,13 @@ export default function LogIn() {
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 const user = userCredential.user;
-                // console.log("User logged in:", user);
                 localStorage.setItem('chat3UserInfo', user)
-
                 // redirect to main page
                 router.push('/')
-
             })
             .catch((error) => {
                 console.error("Error logging in: ", error.message);
+                toast('Invalid credentials')
             });
     };
 
@@ -46,9 +44,6 @@ export default function LogIn() {
     return (
         <div className="w-screen h-100svh flex flex-col gap-20 justify-center items-center bg-white text-black">
 
-            {/* <h1 className="text-4xl font-extrabold ">Application name</h1> */}
-
-
             <form onSubmit={handleLogin} className="w-4/5 max-w-64 flex flex-col justify-center items-center gap-5">
                 <h1 className="font-bold text-xl">Login</h1>
                 <input className="px-5 py-3 w-full bg-gray-300 rounded-lg" name="email" type="email" placeholder="email" />
@@ -56,6 +51,11 @@ export default function LogIn() {
                 <button className="px-5 py-3 text-white rounded-lg bg-blue-700" type="submit" >Login</button>
                 <button onClick={() => router.push('/sign-up')} className="text-xs hover:text-blue-400 underline underline-offset-2">Dont have an acocunt? Sign up here.</button>
             </form>
+
+            <div className="fixed bottom-3 right-3">
+            <ToastContainer position="bottom-right" theme="light"  />
+
+            </div>
 
         </div>
     )

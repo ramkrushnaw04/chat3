@@ -8,6 +8,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import Navbar from '../components/NavBar';
 import { setUserInfo } from '../store/slices/userSlice';
 import { socketService } from '../components/socket/SocketService';
+import { FaSignOutAlt, FaUser } from "react-icons/fa";
 
 const Profile = () => {
     const router = useRouter();
@@ -100,7 +101,7 @@ const Profile = () => {
                     {userInfo && (
                         <>
                             <img
-                                src={userInfo.profile}
+                                src={userInfo.profile || "images/user-profile.jpg"}
                                 alt={`${userInfo.firstName} ${userInfo.lastName}`}
                                 className="w-32 h-32 rounded-full mb-4 border-2 border-blue-500"
                             />
@@ -115,6 +116,18 @@ const Profile = () => {
                         onClick={() => setIsEditing(true)}
                     >
                         Edit
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            localStorage.removeItem('chat3UserInfo');
+                            socketService.disconnect()
+                            signOut(auth);
+                            router.push('/log-in')
+                        }}
+                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg flex items-center space-x-2">
+                        <FaSignOutAlt />
+                        <span>Logout</span>
                     </button>
                 </div>
             </div>

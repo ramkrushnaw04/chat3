@@ -75,7 +75,7 @@ const ChatHeaderGroup = ({ data, activeChatHandler }) => {
                     </button>
                 )}
                 <div className="relative mr-4">
-                    <img src={data.profile} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
+                    <img src={data.profile || "images/group-profile.svg"} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
                     <span className="absolute bottom-[-1px] right-[-1px] w-4 h-4 flex items-center justify-center border-2 border-white text-white text-xs font-bold rounded-full bg-green-500">
                         {onlineMembersInCurrentChat.length}
                     </span>

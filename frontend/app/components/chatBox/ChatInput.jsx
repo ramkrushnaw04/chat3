@@ -169,10 +169,10 @@ const ChatInput = ({ activeChatID }) => {
                 </div>
             )}
     
-            <form onSubmit={handleSendMessage} className="input-area flex items-center p-3 border-t">
+            <form onSubmit={handleSendMessage} className="input-area flex border m-2 rounded-full gap-2 items-center p-2 ">
                 <label
                     htmlFor="file-upload"
-                    className="media-btn mr-2 p-2 border bg-blue-500 rounded-md text-gray-700 hover:bg-gray-300 cursor-pointer"
+                    className="media-btn border bg-blue-600 rounded-full text-gray-800 hover:bg-blue-700 cursor-pointer flex justify-center items-center w-10 h-10 "
                 >
                     <FiPaperclip size={18} color="white" />
                 </label>
@@ -190,9 +190,9 @@ const ChatInput = ({ activeChatID }) => {
                         showTypingIndicator();
                     }}
                     placeholder="Type a message..."
-                    className="flex-1 p-2 border rounded-md focus:outline-none"
+                    className="flex-1 p-2 focus:outline-none h-10"
                 />
-                <button type="submit" className="send-btn ml-2 bg-blue-500 text-white p-2 rounded-md">
+                <button type="submit" className="send-btn  bg-blue-600 hover:bg-blue-700 flex justify-center items-center text-white w-10 h-10 rounded-full">
                     <FiSend size={18} />
                 </button>
             </form>

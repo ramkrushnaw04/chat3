@@ -26,7 +26,7 @@ const ChatsItem = ({ data, isOnline, onClick }) => {
         const date = new Date(time);
         const day = date.getDate().toString().padStart(2, '0');
         const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-based
-        const year = date.getFullYear();
+        const year = date.getFullYear() % 100;
         return `${day}/${month}/${year}`;
     };
 
@@ -60,23 +60,20 @@ const ChatsItem = ({ data, isOnline, onClick }) => {
     return (
         <div 
             onClick={onClick} 
-            className="flex items-center h-20 px-3 cursor-pointer hover:bg-gray-200 bg-gray-100 rounded-lg transition justify-between"
+            className="flex items-center h-20 px-3 cursor-pointer hover:bg-gray-200 bg-gray-100 rounded-lg transition justify-between flex-shrink-0"
         >
             <div className="flex items-center w-full">
                 <div className="relative">
-                    {data.profile 
-                        ? <img src={data.profile} className="w-10 h-10 rounded-full object-cover" />
-                        : <AiOutlineTeam size={'3rem'}/>
-                    }
+                    <img src={data.profile || (data.type == 'private' ? "images/user-profile.jpg" : "images/group-profile.svg")} className="w-10 h-10 rounded-full object-cover" />
                 </div>
 
                 <div className="ml-4 flex-1">
                     <div className='flex justify-between w-full'>
-                        <div className="font-medium text-gray-900">{data.name}</div>
+                        <div className="font-medium text-gray-900 truncate">{data.name}</div>
                         {lastMessage && <span className="text-gray-500 text-xs pt-1">{formatDate(lastMessage.sentAt)}</span>}
                     </div>
                     {lastMessage && (
-                        <div className="text-gray-500 text-sm flex items-center gap-2">
+                        <div className="text-gray-500 text-sm flex items-center justify-between ">
                             
                             {!lastMessage.file && <span className={`${lastMessage.isPending ? 'text-green-400' : 'text-grey-300'} truncate`} >{lastMessage.text}</span>}
                             {lastMessage.file && <div className='flex gap-1 items-center w-full'>
@@ -84,16 +81,9 @@ const ChatsItem = ({ data, isOnline, onClick }) => {
                                 <span className='truncate'>{lastMessage.file.name}</span>
                             </div>}
                             
-
-                            <div className="flex items-center ">
-                                {pendingMessages > 0 && (
-                                    <div className="flex items-center">
-                                        <span className="flex items-center justify-center w-4 h-4 bg-green-500 text-white rounded-full text-xs font-bold">
-                                            {pendingMessages}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
+                            {pendingMessages > 0 && (
+                                <span className=" w-4 h-4 text-center bg-green-500 text-white rounded-full text-xs font-bold"> {pendingMessages} </span>
+                            )}
 
 
                         </div>

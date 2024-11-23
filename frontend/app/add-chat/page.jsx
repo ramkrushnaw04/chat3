@@ -64,7 +64,7 @@ export default function Chats() {
         <div className="relative w-screen h-100svh flex flex-col items-center bg-white text-black">
             <Navbar />
 
-            <div className="w-11/12 max-w-md mt-10 ">
+            <div className="w-11/12 max-w-md mt-10">
                 <input
                     type="text"
                     placeholder="Search for people..."
