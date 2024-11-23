@@ -1,7 +1,7 @@
 
 const { Schema, mongoose, model } = require('mongoose')
 
-const { userSchema } = require('./userSchema')
+const { userSchema } = require('./UserSchema')
 const User = model('User', userSchema)
 
 const { groupSchema } = require('./GroupChatSchema')
