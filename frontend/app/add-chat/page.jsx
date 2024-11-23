@@ -18,6 +18,7 @@ export default function Chats() {
     const [userList, setUserList] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const userInfo = useSelector((state) => state.user.userInfo)
+    const [isRequestSent, setIsRequestSent] = useState(false)
 
     useEffect(() => {
         socketService.connect();
@@ -44,6 +45,11 @@ export default function Chats() {
 
 
     const handleUserSelect = (user) => {
+        if(isRequestSent) {
+            console.log('requeset alredy sent')
+            return
+        }
+        
         const myUserID = userInfo._id
         const otherID = user._id
 
@@ -58,6 +64,7 @@ export default function Chats() {
                 router.push('/')
             }
         })
+        setIsRequestSent(true)
     };
 
     return (

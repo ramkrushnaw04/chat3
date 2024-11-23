@@ -69,11 +69,12 @@ const messageSchema = Schema({
 
 
 
-messageSchema.statics.getMessagesOfChat = async function (chatID, joinedAt) {
+messageSchema.statics.getMessagesOfChat = async function (chatID, joinedAt, userID) {
     if (chatID == '') return
     const messages = await this
         .where('chatID').equals(chatID)
         .where('sentAt').gte(joinedAt)
+        // .where('senderID').ne(userID)
         .populate('repliedTo')
         .sort({sentAt: 1})
     return messages

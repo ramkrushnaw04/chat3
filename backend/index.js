@@ -103,6 +103,7 @@ io.on('connection', socket => {
                 type: data.type,
                 description: data.description
             });
+            // if chat is private then check if another chat exists with same 
             const groupPromises = members.map(user => {
                 const userGroup = new UserGroup({
                     userID: user.userID,
@@ -275,7 +276,7 @@ io.on('connection', socket => {
                 groupID: chatID
             })
             const joinedAt = userGroup[0]?.joinedAt
-            const messages = await Message.getMessagesOfChat(chatID, joinedAt)
+            const messages = await Message.getMessagesOfChat(chatID, joinedAt, userID)
             callback(messages)
         } catch (e) {
             console.log("error 'get-all-messages-of-chat': ", e.message)
