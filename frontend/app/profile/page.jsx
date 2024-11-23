@@ -12,7 +12,6 @@ import { socketService } from '../components/socket/SocketService';
 const Profile = () => {
     const router = useRouter();
     let [user] = useAuthState(auth);
-    const storedUser = localStorage.getItem('chat3UserInfo');
     const userInfo = useSelector((state) => state.user.userInfo);
     const dispatch = useDispatch();
     const socket = useRef(null);
@@ -31,6 +30,7 @@ const Profile = () => {
     }, []);
 
     useEffect(() => {
+        const storedUser = localStorage.getItem('chat3UserInfo');
         if (!user && !storedUser) {
             router.push('/log-in');
         } else if (user && socket.current) {
@@ -52,7 +52,7 @@ const Profile = () => {
                 }
             );
         }
-    }, [user, storedUser, socket.current, dispatch]);
+    }, [user, socket.current, dispatch]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
