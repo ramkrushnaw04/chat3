@@ -20,8 +20,7 @@ export default function Home() {
     const dispatch = useDispatch()
     const [activeChat, setActiveChat] = useState(null)
     const mobileWidth = 768
-    const [mobile, setMobile] = useState(window.innerWidth < mobileWidth ? true : false)
-    const userInfo = useSelector(state => state.user.userInfo)
+    const [mobile, setMobile] = useState(false)
 
     useEffect(() => {
         socketService.connect();
