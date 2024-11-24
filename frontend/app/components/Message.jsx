@@ -163,7 +163,7 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                     </div>
                 )}
 
-                <div onClick={togglePopup} className={`w-full ${isSentByUser ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'} rounded-md flex flex-col px-2 py-2 cursor-pointer dark:bg-gray-800 dark:text-white dark:bg-opacity-75`}>
+                <div onClick={togglePopup} className={`w-full ${isSentByUser ? 'bg-blue-500 text-white dark:bg-blue-950' : 'bg-gray-200 text-black  dark:bg-gray-800'} rounded-md flex flex-col px-2 py-2 cursor-pointer dark:text-white dark:bg-opacity-75`}>
                     <div>{renderRepliedToMessage()}</div>
                     <div className="gap-2 flex w-full items-center">
                         <div className="flex w-full items-end flex-col">

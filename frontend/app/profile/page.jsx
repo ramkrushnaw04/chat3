@@ -65,6 +65,46 @@ const Profile = () => {
         }
     }, [user, socket.current, dispatch]);
 
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Convert image to Base64
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64String = reader.result;
+                setPreviewImage(base64String); // Update preview
+                setFormData((prev) => ({
+                    ...prev,
+                    profile: base64String, // Update profile field with Base64 image
+                }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSave = () => {
+        if (socket.current) {
+            socket.current.emit('update-user-info', { _id: userInfo._id, update: formData }, (response) => {
+                if(response.success) {
+                    dispatch(setUserInfo(response.newUser));
+                    localStorage.setItem('chat3UserInfo', JSON.stringify(response));
+                    setIsEditing(false);
+                    toast(response.message)
+                } else {
+                    toast.error(response.message)
+                }
+            });
+        }
+    };
+
     const toggleDarkMode = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
     return isAppActive ? (
@@ -116,6 +156,84 @@ const Profile = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Edit Modal */}
+            {isEditing && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-11/12 max-w-96 p-6 relative">
+                        {/* Close Button */}
+                        <button
+                            className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition"
+                            onClick={() => setIsEditing(false)}
+                        >
+                            <FiX size={16} />
+                        </button>
+
+                        <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-6">
+                            Edit Profile
+                        </h2>
+                        <div className="space-y-4">
+                            <input
+                                type="text"
+                                name="firstName"
+                                value={formData.firstName}
+                                onChange={handleInputChange}
+                                placeholder="First Name"
+                                className="w-full px-4 py-2 border rounded-lg shadow-sm text-gray-800 dark:text-white dark:bg-gray-700 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500"
+                            />
+                            <input
+                                type="text"
+                                name="lastName"
+                                value={formData.lastName}
+                                onChange={handleInputChange}
+                                placeholder="Last Name"
+                                className="w-full px-4 py-2 border rounded-lg shadow-sm text-gray-800 dark:text-white dark:bg-gray-700 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500"
+                            />
+                            <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleInputChange}
+                                placeholder="Email"
+                                className="w-full px-4 py-2 border rounded-lg shadow-sm text-gray-800 dark:text-white dark:bg-gray-700 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500"
+                            />
+                            <div className="flex flex-col items-center">
+                                <label htmlFor="profile" className="cursor-pointer">
+                                    <img
+                                        src={previewImage || "images/user-profile.jpg"}
+                                        alt="Profile Picker"
+                                        className="w-24 h-24 rounded-full mt-4 shadow-md hover:opacity-75 transition duration-200"
+                                    />
+                                </label>
+                                <input
+                                    type="file"
+                                    id="profile"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleImageChange}
+                                />
+                            </div>
+                        </div>
+                        <div className="mt-6 flex justify-end gap-4">
+                            <button
+                                className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg shadow hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 transition"
+                                onClick={() => setIsEditing(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 transition"
+                                onClick={handleSave}
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+
         </div>
     ) : (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900">
