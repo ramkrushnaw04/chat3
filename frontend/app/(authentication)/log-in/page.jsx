@@ -57,7 +57,7 @@ export default function LogIn() {
                     <input className="px-5 py-3 w-full bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white dark:border-none" name="email" type="email" placeholder="email" />
                     <input className="px-5 py-3 w-full bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white dark:border-none" name="password" type="password" placeholder="password" />
                     <button className="px-5 py-3 text-white rounded-lg bg-blue-700 dark:bg-blue-600" type="submit">Login</button>
-                    <button onClick={() => router.push('/sign-up')} className="text-xs hover:text-blue-400 underline underline-offset-2 dark:hover:text-blue-300">Don't have an account? Sign up here.</button>
+                    <button onClick={() => router.push('/sign-up')} className="text-xs hover:text-blue-400 underline underline-offset-2 dark:hover:text-blue-300">Don&rsquo;t have an account? Sign up here.</button>
                 </form>
             </div>
         ) : (
