@@ -157,126 +157,131 @@ const ChatInput = ({ activeChatID }) => {
 
     return (
         <>
-            {/* Replying Message Display */}
-            {replyingTo && (
-                <div className="replied-message relative bg-gray-100 p-2 h-auto flex gap-2 items-center w-full">
-                    <p className='text-xs px-2 py-1 rounded-xl bg-blue-300 min-w-fit self-start'>Replying to: </p>
-                    <div className="flex items-center w-full mr-5">
-                        {!replyingTo.file && (
-                            <span className="text-sm text-gray-700 max-h-24 overflow-y-scroll break-words break-all w-full">{replyingTo.text}</span>
-                        )}
-                        {replyingTo.file && replyingTo.file.type.startsWith('image') && (
-                            <div className="flex items-center">
-                                <img
-                                    src={replyingTo.file.content}
-                                    alt="Replied Image"
-                                    className="w-10 h-10 object-cover mr-2 rounded-md"
-                                />
-                                <span className="text-sm text-gray-700">{replyingTo.text || "Image"}</span>
-                            </div>
-                        )}
+    {/* Replying Message Display */}
+    {replyingTo && (
+        <div className="replied-message relative bg-gray-100 dark:bg-gray-800 p-2 h-auto flex gap-2 items-center w-full">
+            <p className='text-xs px-2 py-1 rounded-xl bg-blue-300 dark:bg-blue-600 min-w-fit self-start text-gray-900 dark:text-gray-100'>
+                Replying to: 
+            </p>
+            <div className="flex items-center w-full mr-5">
+                {!replyingTo.file && (
+                    <span className="text-sm text-gray-700 dark:text-gray-300 max-h-24 overflow-y-scroll break-words break-all w-full">
+                        {replyingTo.text}
+                    </span>
+                )}
+                {replyingTo.file && replyingTo.file.type.startsWith('image') && (
+                    <div className="flex items-center">
+                        <img
+                            src={replyingTo.file.content}
+                            alt="Replied Image"
+                            className="w-10 h-10 object-cover mr-2 rounded-md"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{replyingTo.text || "Image"}</span>
                     </div>
-                    {/* cross button */}
+                )}
+            </div>
+            {/* cross button */}
+            <button
+                className="ml-2 absolute top-3 right-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                onClick={() => dispatch(setReplyingToMessage(null))}
+            >
+                <FiX size={16} />
+            </button>
+        </div>
+    )}
+
+    <form onSubmit={handleSendMessage} className="input-area flex border dark:border-gray-800 m-2 rounded-full gap-2 items-center p-2 ">
+        <label
+            htmlFor="file-upload"
+            className="media-btn  bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950 rounded-full text-gray-800 dark:text-gray-200 hover:bg-blue-700 cursor-pointer flex justify-center items-center w-10 h-10"
+        >
+            <FiPaperclip size={18} color="white" />
+        </label>
+        <input
+            id="file-upload"
+            type="file"
+            onChange={handleFileSelect}
+            className="hidden"
+        />
+        <textarea
+            value={message}
+            onChange={(e) => {
+                setMessage(e.target.value);
+                showTypingIndicator();
+                handleResize(e); // Adjust height dynamically
+            }}
+            placeholder="Type a message..."
+            rows={1}
+            ref={textareaRef}
+            className="flex-1 p-2 focus:outline-none h-auto resize-none overflow-y-scroll bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+            style={{ lineHeight: "1.5", minHeight: "40px" }} // Adjust styles as needed
+        />
+
+        <button type="submit" className="send-btn bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950 hover:bg-blue-700 flex justify-center items-center text-white w-10 h-10 rounded-full">
+            <FiSend size={18} />
+        </button>
+    </form>
+
+    {/* Error Message */}
+    {errorMessage && (
+        <div className="text-red-500 text-sm mt-2">{errorMessage}</div>
+    )}
+
+    {/* Confirmation Screen */}
+    {showConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-10">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg max-w-sm w-full">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Confirm File</h2>
                     <button
-                        className="ml-2 absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-                        onClick={() => dispatch(setReplyingToMessage(null))}
+                        onClick={() => setShowConfirmation(false)}
+                        className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                     >
-                        <FiX size={16} />
+                        <FiX size={20} />
                     </button>
                 </div>
-            )}
-
-            <form onSubmit={handleSendMessage} className="input-area flex border m-2 rounded-full gap-2 items-center p-2 ">
-                <label
-                    htmlFor="file-upload"
-                    className="media-btn border bg-blue-600 rounded-full text-gray-800 hover:bg-blue-700 cursor-pointer flex justify-center items-center w-10 h-10 "
-                >
-                    <FiPaperclip size={18} color="white" />
-                </label>
-                <input
-                    id="file-upload"
-                    type="file"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                />
-                <textarea
-                    value={message}
-                    onChange={(e) => {
-                        setMessage(e.target.value);
-                        showTypingIndicator();
-                        handleResize(e); // Adjust height dynamically
-                    }}
-                    placeholder="Type a message..."
-                    rows={1}
-                    ref={textareaRef}
-                    className="flex-1 p-2 focus:outline-none h-auto resize-none overflow-y-scroll "
-                    style={{ lineHeight: "1.5", minHeight: "40px" }} // Adjust styles as needed
-                />
-
-                <button type="submit" className="send-btn  bg-blue-600 hover:bg-blue-700 flex justify-center items-center text-white w-10 h-10 rounded-full">
-                    <FiSend size={18} />
-                </button>
-            </form>
-
-            {/* Error Message */}
-            {errorMessage && (
-                <div className="text-red-500 text-sm mt-2">{errorMessage}</div>
-            )}
-
-            {/* Confirmation Screen */}
-            {showConfirmation && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-10">
-                    <div className="bg-white p-4 rounded-lg shadow-lg max-w-sm w-full">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-semibold">Confirm File</h2>
-                            <button
-                                onClick={() => setShowConfirmation(false)}
-                                className="text-gray-500 hover:text-gray-700"
-                            >
-                                <FiX size={20} />
-                            </button>
-                        </div>
-                        <div className="mb-4">
-                            <p><strong>File Name:</strong> {selectedFile.name}</p>
-                            <p><strong>File Type:</strong> {selectedFile.type || "Unknown"}</p>
-                            <p><strong>File Size:</strong> {(selectedFile.size / 1024).toFixed(2)} KB</p>
-                        </div>
-                        {/* File Preview Section */}
-                        {filePreview ? (
-                            <div className="mb-4">
-                                <img src={filePreview} alt="file-preview" className="w-full h-40 object-cover rounded-md" />
-                            </div>
-                        ) : selectedFile.type === 'application/pdf' ? (
-                            <div className="mb-4">
-                                <p className="text-gray-500">PDF Preview (Not supported in this view)</p>
-                            </div>
-                        ) : (
-                            <div className="mb-4">
-                                <p className="text-gray-500">No preview available for this file type</p>
-                            </div>
-                        )}
-
-                        {/* Text field for file message */}
-                        <div className="mb-4">
-                            <input
-                                type="text"
-                                value={fileMessage}
-                                onChange={(e) => setFileMessage(e.target.value)}
-                                placeholder="Add a message with the file"
-                                className="w-full p-2 border rounded-md"
-                            />
-                        </div>
-
-                        <button
-                            onClick={handleSendFile}
-                            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
-                        >
-                            Send
-                        </button>
-                    </div>
+                <div className="mb-4">
+                    <p><strong>File Name:</strong> {selectedFile.name}</p>
+                    <p><strong>File Type:</strong> {selectedFile.type || "Unknown"}</p>
+                    <p><strong>File Size:</strong> {(selectedFile.size / 1024).toFixed(2)} KB</p>
                 </div>
-            )}
-        </>
+                {/* File Preview Section */}
+                {filePreview ? (
+                    <div className="mb-4">
+                        <img src={filePreview} alt="file-preview" className="w-full h-40 object-cover rounded-md" />
+                    </div>
+                ) : selectedFile.type === 'application/pdf' ? (
+                    <div className="mb-4">
+                        <p className="text-gray-500 dark:text-gray-400">PDF Preview (Not supported in this view)</p>
+                    </div>
+                ) : (
+                    <div className="mb-4">
+                        <p className="text-gray-500 dark:text-gray-400">No preview available for this file type</p>
+                    </div>
+                )}
+
+                {/* Text field for file message */}
+                <div className="mb-4">
+                    <input
+                        type="text"
+                        value={fileMessage}
+                        onChange={(e) => setFileMessage(e.target.value)}
+                        placeholder="Add a message with the file"
+                        className="w-full p-2 border rounded-md dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500"
+                    />
+                </div>
+
+                <button
+                    onClick={handleSendFile}
+                    className="w-full bg-blue-500 dark:bg-blue-600 text-white py-2 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700"
+                >
+                    Send
+                </button>
+            </div>
+        </div>
+    )}
+</>
+
     );
 
 };

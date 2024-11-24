@@ -59,19 +59,19 @@ const ChatHeaderGroup = ({ data, activeChatHandler }) => {
         setIsModalOpen((prev) => !prev);
     };
 
-    const typingMessage = typingUsers.length > 0 
-        ? `${typingUsers.join(', ')} ${typingUsers.length > 1 ? 'are' : 'is'} typing...` 
+    const typingMessage = typingUsers.length > 0
+        ? `${typingUsers.join(', ')} ${typingUsers.length > 1 ? 'are' : 'is'} typing...`
         : '';
 
     return (
         <>
             <div
                 onClick={toggleModal}
-                className="header flex items-center p-4 bg-white border-b cursor-pointer"
+                className="header flex items-center p-4 bg-white border-b cursor-pointer dark:bg-gray-900 dark:border-gray-800"
             >
                 {mobile && (
                     <button className="mr-4" onClick={() => activeChatHandler(null)}>
-                        <AiOutlineArrowLeft className="h-6 w-6 text-gray-500 hover:text-gray-700" />
+                        <AiOutlineArrowLeft className="h-6 w-6 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100" />
                     </button>
                 )}
                 <div className="relative mr-4">
@@ -81,7 +81,7 @@ const ChatHeaderGroup = ({ data, activeChatHandler }) => {
                     </span>
                 </div>
                 <div>
-                    <h2 className="font-semibold">
+                    <h2 className="font-semibold text-gray-900 dark:text-gray-100">
                         {data.name}
                     </h2>
                     {typingMessage && (
@@ -89,8 +89,9 @@ const ChatHeaderGroup = ({ data, activeChatHandler }) => {
                     )}
                 </div>
             </div>
-            
-            {isModalOpen && 
+
+
+            {isModalOpen &&
                 <MembersPopup
                     onClose={toggleModal}
                     onlineMembers={onlineMembersInCurrentChat}

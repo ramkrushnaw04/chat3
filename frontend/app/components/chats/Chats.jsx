@@ -302,16 +302,16 @@ const Chats = ({ style, activeChatHandler }) => {
 
     // handle update group
     useEffect(() => {
-        if(!chats.length || !activeChat) return
+        if (!chats.length || !activeChat) return
 
         socket.current.on('edit-group', editedGroupInfo => {
             let updatedGroup
             const updatedChats = chats.map(chat => {
-                if(chat.chatID == editedGroupInfo.chatID) {
+                if (chat.chatID == editedGroupInfo.chatID) {
                     const newChat = structuredClone(chat)
                     newChat.name = editedGroupInfo.name
                     newChat.description = editedGroupInfo.description,
-                    newChat.profile = editedGroupInfo.profile
+                        newChat.profile = editedGroupInfo.profile
 
                     updatedGroup = newChat
                     return newChat
@@ -320,7 +320,7 @@ const Chats = ({ style, activeChatHandler }) => {
             setChats(updatedChats)
 
             // update active chat if this is active chat
-            if(editedGroupInfo.chatID == activeChat.chatID) {
+            if (editedGroupInfo.chatID == activeChat.chatID) {
                 setActiveChatInfo(updatedGroup)
                 activeChatHandler(updatedGroup)
             }
@@ -331,7 +331,7 @@ const Chats = ({ style, activeChatHandler }) => {
                 return prev.filter(chat => chat.chatID != response.chatID)
             })
 
-            if(activeChat.chatID == response.chatID) {
+            if (activeChat.chatID == response.chatID) {
                 setActiveChatInfo(null)
                 activeChatHandler(null)
             }
@@ -346,7 +346,7 @@ const Chats = ({ style, activeChatHandler }) => {
             <input
                 type="text"
                 placeholder="Search People..."
-                className="px-3 w-auto m-4 bg-gray-200 text-black border-none rounded-lg focus:outline-none  h-10 text-sm "
+                className="px-3 w-auto m-4 bg-gray-200 dark:bg-gray-800 dark:text-gray-100 text-black border-none rounded-lg focus:outline-none  h-10 text-sm "
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -354,23 +354,24 @@ const Chats = ({ style, activeChatHandler }) => {
             {/* Button to add chat and create group chats */}
             <button
                 onClick={toggleOptions}
-                className="absolute bottom-4 right-4 w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center rounded-lg shadow-2xl transition duration-200"
+                className="absolute bottom-4 right-4 w-12 h-12 dark:bg-blue-900 dark:hover:bg-blue-950 bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center rounded-lg shadow-2xl transition duration-200"
             >
                 <BsChatDotsFill size={24} />
             </button>
 
+
             {/* Options: create private chat and create group */}
             {showOptions && (
-                <div className="absolute bottom-20 p-2 bg-white text-black rounded-lg shadow-lg right-5 flex flex-col gap-3">
+                <div className="absolute bottom-20 p-2 bg-white text-black rounded-lg shadow-lg right-5 flex flex-col gap-3 dark:bg-gray-800 dark:text-white">
                     <button
                         onClick={() => router.push('/add-chat')}
-                        className="flex items-center gap-2 px-5 py-2 hover:bg-gray-200 text-gray-700 transition duration-200 rounded-lg"
+                        className="flex items-center gap-2 px-5 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition duration-200 rounded-lg"
                     >
                         <AiOutlineUserAdd size={20} /> Add Chat
                     </button>
                     <button
                         onClick={() => router.push('/create-group')}
-                        className="flex items-center gap-2 px-5 py-2 hover:bg-gray-200 text-gray-700 transition duration-200 rounded-lg"
+                        className="flex items-center gap-2 px-5 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition duration-200 rounded-lg"
                     >
                         <AiOutlineTeam size={20} /> Create Group
                     </button>
@@ -388,9 +389,10 @@ const Chats = ({ style, activeChatHandler }) => {
                         />
                     ))
                 ) : (
-                    <p className="text-center text-gray-500 mt-4 w-full h-full flex justify-center items-center">No chats found.</p>
+                    <p className="text-center text-gray-500 dark:text-gray-400 mt-4 w-full h-full flex justify-center items-center">No chats found.</p>
                 )}
             </div>
+
 
         </div>
     );

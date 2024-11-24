@@ -20,7 +20,7 @@ export default function Page() {
     const [searchQuery, setSearchQuery] = useState("");
     const userInfo = useSelector((state) => state.user.userInfo);
     let [user] = useAuthState(auth);
-    
+
 
     const [selectedGroupUsers, setSelectedGroupUsers] = useState([]);
     const [isCreatingGroup, setIsCreatingGroup] = useState(false);
@@ -46,7 +46,7 @@ export default function Page() {
 
         if (!currentUser && !storedUser) {
             router.push('/log-in');
-        } 
+        }
     }, [currentUser]);
 
 
@@ -87,19 +87,19 @@ export default function Page() {
     );
 
     return (
-        <div className="relative w-screen h-100svh flex flex-col items-center bg-white text-black">
+        <div className="relative w-screen h-100svh flex flex-col items-center bg-white text-black dark:bg-gray-900 dark:text-white">
             <Navbar />
 
             {isCreatingGroup ? (
-                <GroupCreation 
-                    selectedUsers={selectedGroupUsers} 
-                    groupName={groupName} 
-                    groupInfo={groupInfo} 
+                <GroupCreation
+                    selectedUsers={selectedGroupUsers}
+                    groupName={groupName}
+                    groupInfo={groupInfo}
                     groupImage={groupImage} // Pass the base64 image to GroupCreation component
                     onGroupNameChange={(e) => setGroupName(e.target.value)}
                     onGroupInfoChange={(e) => setGroupInfo(e.target.value)} // Pass function to handle group info change
                     onGroupImageChange={handleGroupImageChange} // Handle group image change
-                    onBack={handleBack} 
+                    onBack={handleBack}
                 />
             ) : (
                 <>
@@ -107,7 +107,7 @@ export default function Page() {
                         <input
                             type="text"
                             placeholder="Search for people..."
-                            className="w-full p-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-base"
+                            className="w-full p-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 dark:bg-gray-800 dark:text-white dark:border-gray-600"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -116,7 +116,7 @@ export default function Page() {
                     {/* Selected Users Row */}
                     <div className="w-11/12 max-w-md flex flex-wrap items-center gap-2 mt-4 p-2">
                         <div
-                            className="flex items-center space-x-2 p-2 border border-gray-300 rounded-full bg-gray-100"
+                            className="flex items-center space-x-2 p-2 border border-gray-300 rounded-full bg-gray-100 dark:bg-gray-700 dark:border-gray-600"
                         >
                             <img src={userInfo.profile || 'images/user-profile.jpg'} alt="YOU" className="w-8 h-8 rounded-full" />
                             <span className="text-sm">You</span>
@@ -126,17 +126,17 @@ export default function Page() {
                             selectedUsersDetails.map(user => (
                                 <div
                                     key={user._id}
-                                    className="flex items-center space-x-2 p-2 border border-gray-300 rounded-full bg-gray-100"
+                                    className="flex items-center space-x-2 p-2 border border-gray-300 rounded-full bg-gray-100 dark:bg-gray-700 dark:border-gray-600"
                                 >
                                     <img src={user.profile || 'images/user-profile.jpg'} alt={user.firstName} className="w-8 h-8 rounded-full" />
                                     <span className="text-sm">{user.firstName + ' ' + user.lastName}</span>
-                                    <button onClick={() => handleRemoveUser(user._id)} className="text-gray-500 hover:text-gray-700">
+                                    <button onClick={() => handleRemoveUser(user._id)} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-500">
                                         <AiOutlineClose className="w-4 h-4" />
                                     </button>
                                 </div>
                             ))
                         ) : (
-                            <span className="text-gray-500 ml-4">Select more people</span>
+                            <span className="text-gray-500 ml-4 dark:text-gray-400">Select more people</span>
                         )}
                     </div>
 
@@ -147,13 +147,13 @@ export default function Page() {
                     <button
                         onClick={handleProceed}
                         disabled={selectedUsersDetails.length === 0}
-                        className={`absolute bottom-6 w-11/12 max-w-md px-6 py-2 font-semibold rounded-md transition duration-200 ${selectedUsersDetails.length > 0 ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                            }`}
+                        className={`absolute bottom-6 w-11/12 max-w-md px-6 py-2 font-semibold rounded-md transition duration-200 ${selectedUsersDetails.length > 0 ? "bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700" : "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"}`}
                     >
                         Proceed
                     </button>
                 </>
             )}
         </div>
+
     );
 }

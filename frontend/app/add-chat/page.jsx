@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { socketService } from "../components/socket/SocketService";
 import SearchedUser from "../components/addChat/SearchedUser";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 export default function Chats() {
     const router = useRouter();
@@ -27,25 +28,23 @@ export default function Chats() {
 
 
     useEffect(() => {
-        socket.current.emit('get-users-from-query', {query: searchQuery}, (response) => {
+        socket.current.emit('get-users-from-query', { query: searchQuery }, (response) => {
             setUserList(response)
         })
-
     }, [searchQuery])
 
-    
+
     useEffect(() => {
         const storedUser = localStorage.getItem('chat3UserInfo');
-
         if (!currentUser && !storedUser) {
             router.push('/log-in');
-        } 
+        }
     }, [currentUser]);
 
 
 
     const handleUserSelect = (user) => {
-        if(isRequestSent.current) {
+        if (isRequestSent.current) {
             return
         }
 
@@ -53,28 +52,32 @@ export default function Chats() {
         const otherID = user._id
 
         // make request only if data is valid
-        myUserID && otherID && socket.current.emit('create-chat', { 
-            name: 'chatName', 
-            profile: '', 
+        myUserID && otherID && socket.current.emit('create-chat', {
+            name: 'chatName',
+            profile: '',
             userIDs: [myUserID, otherID],
-            creationMessgae: `${userInfo.firstName} ${userInfo.lastName} created chat.`
+            creationMessgae: `${userInfo.firstName} ${userInfo.lastName} created chat.`,
+            type: 'private'
         }, (response) => {
-            if(response.success) {
+            if (response.success) {
+                toast('Chat created successfully!')
                 router.push('/')
+            } else {
+                toast.error(response.message)
             }
         })
         isRequestSent.current = false
     };
 
     return (
-        <div className="relative w-screen h-100svh flex flex-col items-center bg-white text-black">
+        <div className="relative w-screen h-[100svh] flex flex-col items-center bg-white text-black dark:bg-gray-900 dark:text-white">
             <Navbar />
 
             <div className="w-11/12 max-w-md mt-10">
                 <input
                     type="text"
                     placeholder="Search for people..."
-                    className="w-full p-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-base"
+                    className="w-full p-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-400"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -82,5 +85,6 @@ export default function Chats() {
 
             <SearchedUser users={userList} searchQuery={searchQuery} onSelectUser={handleUserSelect} />
         </div>
+
     );
 }

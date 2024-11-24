@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
     FaCheck, FaCheckDouble, FaRegClock, FaFilePdf, FaVideo, FaFileImage,
-    FaFileAudio, FaDownload, FaEye, FaReply, 
+    FaFileAudio, FaDownload, FaEye, FaReply,
 } from 'react-icons/fa';
 import { AiOutlineDelete, AiOutlineFile } from 'react-icons/ai'
 import { useDispatch, useSelector } from 'react-redux';
@@ -28,7 +28,7 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
         socketService.connect()
         socket.current = socketService.getSocket()
 
-        
+
 
     }, [])
 
@@ -110,10 +110,10 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
     const renderRepliedToMessage = () => {
         if (!message.repliedTo) return null;
 
-        const repliedMessage = message.repliedTo; 
+        const repliedMessage = message.repliedTo;
 
         return (
-            <div className={`border-l-4 flex gap-2 items-center ${isSentByUser ? 'border-pink-500' : ' border-blue-500'} bg-gray-100 p-2 mb-2 rounded-md text-sm text-gray-900`}>
+            <div className={`border-l-4 flex gap-2 items-center ${isSentByUser ? 'border-pink-500' : 'border-blue-500'} bg-gray-100 p-2 mb-2 rounded-md text-sm text-gray-900 dark:bg-gray-800 dark:text-white dark:border-purple-500`}>
                 {repliedMessage.file && repliedMessage.file.type.startsWith('image') && (
                     <img
                         src={repliedMessage.file.content}
@@ -125,36 +125,35 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                     <p className="truncate">{repliedMessage.text}</p>
                 )}
             </div>
+
         );
     };
 
     return (
         <div className={`flex w-full message mb-2 ${isSentByUser ? 'justify-end' : 'justify-start'} group gap-2 items-center`}>
-            
-            {/* show the reply button to left its this users message */}
-            {isSentByUser && <button onClick={handleMessageReply} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 hidden group-hover:flex">
+
+            {/* show the reply button to left if it's this user's message */}
+            {isSentByUser && <button onClick={handleMessageReply} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 hidden group-hover:flex dark:bg-gray-600 dark:hover:bg-gray-700">
                 <FaReply />
             </button>}
 
-            {/* downlaod,view buttons and reply */}
+            {/* download, view buttons and reply */}
             {message.file && isSentByUser && <div className="hidden group-hover:flex gap-2 h-fit">
-                <button onClick={handleDownload} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800">
+                <button onClick={handleDownload} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-700">
                     <FaDownload />
                 </button>
-                <button onClick={handleView} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800">
+                <button onClick={handleView} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-700">
                     <FaEye />
                 </button>
             </div>}
 
             {/* delete button */}
-            {isSentByUser && <button onClick={handleDelete} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 group-hover:block hidden">
+            {isSentByUser && <button onClick={handleDelete} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 group-hover:block hidden dark:bg-gray-600 dark:hover:bg-gray-700">
                 <AiOutlineDelete />
             </button>}
 
-            
-
-            <div className="rounded relative  max-w-[80%] ">
-                {!isSentByUser && prevMessageSenderID != message.senderID && activeChatInfo.type === 'group' && (
+            <div className="rounded relative max-w-[80%]">
+                {!isSentByUser && prevMessageSenderID !== message.senderID && activeChatInfo.type === 'group' && (
                     <div className="flex-shrink-0 m-2 ml-0">
                         <img
                             src={contacts[message.senderID]?.profile}
@@ -163,9 +162,9 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                         />
                     </div>
                 )}
-                
-                <div onClick={togglePopup} className={`w-full  ${isSentByUser ? 'bg-blue-500 text-white  ' : 'bg-gray-200 text-black'} rounded-md flex flex-col  px-2 py-2 cursor-pointer`}>
-                    <div > {renderRepliedToMessage()} </div>
+
+                <div onClick={togglePopup} className={`w-full ${isSentByUser ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'} rounded-md flex flex-col px-2 py-2 cursor-pointer dark:bg-gray-800 dark:text-white dark:bg-opacity-75`}>
+                    <div>{renderRepliedToMessage()}</div>
                     <div className="gap-2 flex w-full items-center">
                         <div className="flex w-full items-end flex-col">
                             {/* image or icon of file */}
@@ -173,11 +172,11 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                                 <img
                                     src={message.file.content}
                                     alt="Message media"
-                                    className="max-w-[250px] rounded-md border border-gray-300 mb-2"
+                                    className="max-w-[250px] rounded-md border border-gray-300 mb-2 dark:border-gray-600"
                                 />
                             )}
                             {!isImageFile && message.file && (
-                                <div className="flex items-center justify-center w-10 h-10 border border-gray-300 rounded-md mb-2">
+                                <div className="flex items-center justify-center w-10 h-10 border border-gray-300 rounded-md mb-2 dark:border-gray-600">
                                     {getFileIcon()}
                                 </div>
                             )}
@@ -195,26 +194,26 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
 
                 {showReadByPopup && (
                     <div
-                        className="fixed inset-0 bg-black bg-opacity-50  flex items-center justify-center z-50 py-4"
+                        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 py-4"
                         onClick={() => setShowReadByPopup(false)}
                     >
                         <div
-                            className="bg-white border rounded-lg shadow-lg p-5 w-11/12 max-h-full overflow-y-scroll max-w-96 relative"
+                            className="bg-white border rounded-lg shadow-lg p-5 w-11/12 max-h-full overflow-y-scroll max-w-96 relative dark:bg-gray-800 dark:border-gray-700"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <button
                                 onClick={() => setShowReadByPopup(false)}
-                                className="absolute top-3 right-3 text-gray-600 hover:text-gray-800 text-2xl font-bold"
+                                className="absolute top-3 right-3 text-gray-600 hover:text-gray-800 text-2xl font-bold dark:text-gray-300"
                             >
                                 &times;
                             </button>
 
                             {isImageFile && (
-                                <div className='flex flex-col items-start justify-between gap-1'> 
+                                <div className='flex flex-col items-start justify-between gap-1'>
                                     <img
                                         src={message.file.content}
                                         alt="Message media"
-                                        className="max-w-[250px] rounded-md border border-gray-300 mb-2 m-auto mt-8"
+                                        className="max-w-[250px] rounded-md border border-gray-300 mb-2 m-auto mt-8 dark:border-gray-600"
                                     />
                                     <p className='text-sm'>Name: {message.file.name}</p>
                                     <p className='text-sm'>Size: {formatBytes(message.file.size)}</p>
@@ -225,7 +224,7 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                                 <FaFilePdf className='w-10 h-10 text-pink-600' />
                                 <p className='text-sm'>Name: {message.file.name}</p>
                                 <p className='text-sm'>Size: {formatBytes(message.file.size)}</p>
-                            </div> }
+                            </div>}
 
                             {isAudioFile && (
                                 <div className='flex flex-col items-start justify-between gap-1'>
@@ -252,21 +251,20 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                             )}
 
                             {message.text && <div className="mb-4 text-left">
-                                <p className="text-sm font-semibold text-gray-800 mb-2">Message:</p>
-                                <p className="bg-gray-100 text-gray-700 p-2 rounded-md break-words">{message.text}</p>
+                                <p className="text-sm font-semibold text-gray-800 mb-2 dark:text-white">Message:</p>
+                                <p className="bg-gray-100 text-gray-700 p-2 rounded-md break-words dark:bg-gray-700 dark:text-gray-300">{message.text}</p>
                             </div>}
 
                             <div className='flex gap-2 items-center justify-end text-xs'>
                                 {isSentByUser && (<span > {getStatusIcon(message.status)} </span>)}
-                                <p>{isSentByUser ? 'Sent at' : 'Recieved at: '} {formatTime(message.sentAt)}</p>
+                                <p>{isSentByUser ? 'Sent at' : 'Received at: '} {formatTime(message.sentAt)}</p>
                             </div>
-
 
                             {readByUsers.length > 0 && isSentByUser && (
                                 <div className="mb-4">
-                                    <h3 className="font-semibold text-sm text-gray-700 mb-2 text-left">Read by:</h3>
+                                    <h3 className="font-semibold text-sm text-gray-700 mb-2 text-left dark:text-white">Read by:</h3>
                                     {readByUsers.map((user) => (
-                                        <div key={user._id} className="flex items-center mb-2 space-x-2 p-3 bg-gray-200 rounded-md">
+                                        <div key={user._id} className="flex items-center mb-2 space-x-2 p-3 bg-gray-200 rounded-md dark:bg-gray-700 dark:text-white">
                                             <img
                                                 src={user.profile}
                                                 alt={user.firstName}
@@ -279,11 +277,12 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                                     ))}
                                 </div>
                             )}
+
                             {notReadByUsers.length > 0 && isSentByUser && (
                                 <div>
-                                    <h3 className="font-semibold text-sm text-gray-700 mb-2 text-left">Not read by:</h3>
+                                    <h3 className="font-semibold text-sm text-gray-700 mb-2 text-left dark:text-white">Not read by:</h3>
                                     {notReadByUsers.map((user) => (
-                                        <div key={user._id} className="flex items-center mb-2 space-x-2 bg-gray-200 p-3 rounded-md">
+                                        <div key={user._id} className="flex items-center mb-2 space-x-2 bg-gray-200 p-3 rounded-md dark:bg-gray-700 dark:text-white">
                                             <img
                                                 src={user.profile}
                                                 alt={user.firstName}
@@ -301,22 +300,21 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                 )}
             </div>
 
-
-            {/* show the reply button to right its not this users message */}
-            {!isSentByUser && <button onClick={handleMessageReply} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 hidden group-hover:flex">
+            {/* show the reply button to the right if it's not this user's message */}
+            {!isSentByUser && <button onClick={handleMessageReply} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 hidden group-hover:flex dark:bg-gray-600 dark:hover:bg-gray-700">
                 <FaReply />
             </button>}
 
             {message.file && !isSentByUser && <div className="hidden group-hover:flex gap-2 h-fit">
-                <button onClick={handleDownload} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800">
+                <button onClick={handleDownload} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-700">
                     <FaDownload />
                 </button>
-                <button onClick={handleView} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800">
+                <button onClick={handleView} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-700">
                     <FaEye />
                 </button>
             </div>}
-
         </div>
+
     );
 };
 

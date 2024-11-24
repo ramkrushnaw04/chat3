@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/app/firebase/config";
@@ -8,9 +8,8 @@ import { useEffect, useRef, useState } from "react";
 import { socketService } from "./components/socket/SocketService";
 import Chats from "./components/chats/Chats";
 import { setUserInfo } from "./store/slices/userSlice";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import ChatBox from "./components/chatBox/ChatBox";
-import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from "axios";
 
@@ -78,27 +77,23 @@ export default function Home() {
 
 
     return (
-        isAppActive ? <div className="relative w-screen h-100svh flex items-center bg-white text-black">
+        isAppActive ? <div className="relative w-screen h-100svh flex items-center bg-white dark:bg-gray-900 text-black dark:text-white">
 
-            <div className={`left  ${mobile ? (activeChat ? 'hidden' : 'flex') : 'flex'} md:flex relative w-full md:w-[350px] h-100svh flex-col border-r-[1px] border-r-gray-200`}>
+            <div className={`left  ${mobile ? (activeChat ? 'hidden' : 'flex') : 'flex'} md:flex relative w-full md:w-[350px] h-100svh flex-col border-r-[1px] border-r-gray-200 dark:border-gray-800`}>
                 <Navbar />
                 <Chats activeChatHandler={handleActiveChat} />
             </div>
 
-            <div className={`right ${mobile ? (activeChat ? 'block' : 'hidden') : 'block w-[calc(100%-350px)]'} w-full  h-100svh`}>
+            <div className={`right ${mobile ? (activeChat ? 'block' : 'hidden') : 'block w-[calc(100%-350px)]'} w-full h-100svh`}>
                 <ChatBox activeChat={activeChat} activeChatHandler={handleActiveChat} />
             </div>
 
-            <ToastContainer position="bottom-right" theme="light" />
-
         </div> 
-        : <div className="fixed inset-0 flex items-center justify-center bg-gray-100 z-50">
+        : <div className="fixed inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900 z-50">
             <div className="flex items-center justify-center gap-2">
                 <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
-                <p className="text-lg font-semibold text-gray-600">Connecting to the server...</p>
+                <p className="text-lg font-semibold text-gray-600 dark:text-gray-400">Connecting to the server...</p>
             </div>
         </div>
-
-
     );
 }

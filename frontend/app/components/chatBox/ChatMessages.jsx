@@ -15,11 +15,10 @@ const ChatMessages = ({ messages }) => {
     }
 
     return messages && messages.length > 0 ? (
-        <div className="messages flex-1 p-4 overflow-y-auto ">
+        <div className="messages flex-1 p-4 overflow-y-auto">
             {messages.map((msg, index) => {
                 // Update message status to "read" if it meets the condition
-                if (msg.readBy.length >= noOfMembers - 1)
-                    msg = { ...msg, status: 'read' };
+                if (msg.readBy.length >= noOfMembers - 1) msg = { ...msg, status: 'read' };
 
                 if (msg.type === 'alert') {
                     return <AlertMessage key={index} text={msg.text} />;
@@ -35,18 +34,18 @@ const ChatMessages = ({ messages }) => {
                 ) : (
                     <div
                         key={index}
-                        className={`flex w-full mb-2 ${
-                            msg.senderID === userInfo._id ? 'justify-end' : 'justify-start'
-                        }`}
+                        className={`flex w-full mb-2 ${msg.senderID === userInfo._id ? 'justify-end' : 'justify-start'
+                            }`}
                     >
                         <div
-                            className={`max-w-[90%] ${
-                                msg.senderID === userInfo._id ? ' bg-blue-500 text-white' : ' bg-gray-200 text-black'
-                            } p-2 rounded-md flex flex-col gap-2`}
+                            className={`max-w-[90%] ${msg.senderID === userInfo._id
+                                    ? 'bg-blue-500 text-white dark:bg-blue-950 dark:text-white'
+                                    : 'bg-gray-200 text-black dark:bg-gray-800 dark:text-white'
+                                } p-2 rounded-md flex flex-col gap-2`}
                         >
                             <div className="flex gap-2 items-center">
                                 <AiOutlineCloseCircle />
-                                <p>This message was deleated</p>
+                                <p>This message was deleted</p>
                             </div>
 
                             {/* message delivery status and sending time */}
@@ -55,13 +54,14 @@ const ChatMessages = ({ messages }) => {
                             </div>
                         </div>
                     </div>
+
                 );
             })}
         </div>
     ) : (
-        <div className="flex flex-col items-center justify-center h-screen bg-white text-gray-600">
+        <div className="flex flex-col items-center justify-center h-screen bg-white text-gray-600 dark:bg-gray-800 dark:text-gray-200">
             <svg
-                className="w-20 h-20 mb-4 text-gray-400"
+                className="w-20 h-20 mb-4 text-gray-400 dark:text-gray-500"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -78,6 +78,7 @@ const ChatMessages = ({ messages }) => {
             <p className="text-sm text-gray-500 mt-2">Send a message to start a conversation.</p>
         </div>
     );
+
 };
 
 export default ChatMessages;

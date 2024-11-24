@@ -103,7 +103,20 @@ io.on('connection', socket => {
                 type: data.type,
                 description: data.description
             });
+
             // if chat is private then check if another chat exists with same 
+            if(data.type == 'private') {
+                const group = await GroupChat.findOne({
+                    type: 'private',
+                    members: { $all: members }
+                })
+                if(group) {
+                    callback({success: false, message: 'Chat already exists!'})
+                    return
+                }
+            }
+
+
             const groupPromises = members.map(user => {
                 const userGroup = new UserGroup({
                     userID: user.userID,
@@ -298,10 +311,10 @@ io.on('connection', socket => {
     socket.on('update-user-info', async (data, callback) => {
         try {
             const newUser = await User.findByIdAndUpdate(data._id, data.update, { new: true })
-            callback(newUser)
+            callback({success: true, newUser, message: 'User profile updated successfully!'})
         } catch (e) {
             console.log("error 'update-user-info': ", e.message)
-            callback(null)
+            callback({success: false, message: 'Error updating user profile'})
         }
     })
 
@@ -450,7 +463,7 @@ io.on('connection', socket => {
         }
     })
 
-    socket.on('delete-chat', async (data) => {
+    socket.on('delete-chat', async (data, callback) => {
         try {
             const { chatID, otherUserID, userID } = data
             await GroupChat.findByIdAndDelete(chatID)
@@ -469,8 +482,10 @@ io.on('connection', socket => {
                 const socket = io.sockets.sockets.get(socketID);
                 socket.leave(chatID)
             }
+            callback({success: true, message: 'Chat deleated successfully!'})
         } catch (e) {
             console.log("error 'delete-chat': ", e.message)
+            callback({success: false,  message: 'Error deleating chat.'})
         }
     })
 
