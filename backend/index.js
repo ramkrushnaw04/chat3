@@ -48,6 +48,8 @@ io.on('connection', socket => {
     console.log(`${socket.id} connected`);
 
     socket.on('get-user-info-form-authID', async (data, callback) => {
+        if(!data?.authID) return
+
         try {
             const user = await User.find({ authID: data.authID });
             const userID = String(user[0]._id)
@@ -61,11 +63,18 @@ io.on('connection', socket => {
 
     socket.on('sign-up', async (data, callback) => {
         try {
+            // check if user exists already
+            const u = await User.find({authID: data.user.uid})
+            if(u[0]) {
+                callback({status: 'duplicate'})
+                return
+            }
+
             const user = new User({
                 authID: data.user.uid,
                 firstName: data.firstName,
                 lastName: data.lastName,
-                profile: data.profileImage,
+                profile: data.user.photoURL,
                 email: data.user.email,
             });
             const lastOnline = new LastOnlineUser({
@@ -358,7 +367,7 @@ io.on('connection', socket => {
     })
 
 
-    socket.on('join-user-group', async ({ userID, chatID }, callback) => {
+    socket.on('join-user-group', async ({ userID, chatID, adderName }, callback) => {
         try {
             // create userGroup only when there is none already
             const userGroupAlready = await UserGroup.find({ userID, groupID: chatID })
@@ -414,7 +423,7 @@ io.on('connection', socket => {
             // create an alert message that the user has left that chat
             const alertMessage = new Message({
                 type: 'alert',
-                text: `${userInfo.firstName} ${userInfo.lastName} has joined the chat.`,
+                text: `${adderName} added ${userInfo.firstName} ${userInfo.lastName}.`,
                 chatID,
                 sentAt: Date.now()
             })
@@ -439,25 +448,24 @@ io.on('connection', socket => {
 
     socket.on('edit-group', async (data) => {
         try {
-            const { editedGroupInfo, chatID, editorName } = data
             await GroupChat.findByIdAndUpdate(
-                chatID,
+                data.chatID,
                 {
-                    name: editedGroupInfo.name,
-                    description: editedGroupInfo.description,
-                    profile: editedGroupInfo.profile
+                    name: data.name,
+                    description: data.description,
+                    profile: data.profile
                 },
             )
             const message = new Message({
                 type: 'alert',
-                text: `${editorName} updated group info.`,
-                chatID,
+                text: `${data.editorName} updated group info.`,
+                chatID: data.chatID,
                 sentAt: Date.now()
             })
             await message.save()
 
-            io.to(chatID).emit('edit-group', { ...editedGroupInfo, chatID })
-            io.to(chatID).emit('message', message)
+            io.to(data.chatID).emit('edit-group', { ...data, chatID: data.chatID })
+            io.to(data.chatID).emit('message', message)
         } catch (e) {
             console.log("error 'edit-group': ", e.message)
         }

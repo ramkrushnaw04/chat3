@@ -9,13 +9,14 @@ import { socketService } from './socket/SocketService';
 import { setReplyingToMessage } from '../store/slices/messagesSlice';
 
 
-const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
+const Message = ({ id, message, isSentByUser, prevMessageSenderID, ref }) => {
     const contacts = useSelector((state) => state.contacts);
     const [showReadByPopup, setShowReadByPopup] = useState(false);
     const userInfo = useSelector((state) => state.user.userInfo);
     const activeChatInfo = useSelector((state) => state.activeChat);
     const socket = useRef(null)
     const dispatch = useDispatch()
+
 
     function formatBytes(bytes) {
         if (bytes === 0) return '0 Bytes';
@@ -27,9 +28,6 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
     useEffect(() => {
         socketService.connect()
         socket.current = socketService.getSocket()
-
-
-
     }, [])
 
     const togglePopup = () => {
@@ -113,7 +111,7 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
         const repliedMessage = message.repliedTo;
 
         return (
-            <div className={`border-l-4 flex gap-2 items-center ${isSentByUser ? 'border-pink-500' : 'border-blue-500'} bg-gray-100 p-2 mb-2 rounded-md text-sm text-gray-900 dark:bg-gray-800 dark:text-white dark:border-purple-500`}>
+            <div ref={ref} className={`border-l-4 flex gap-2 items-center ${isSentByUser ? 'border-pink-500' : 'border-blue-500'} bg-gray-100 p-2 mb-2 rounded-md text-sm text-gray-900 dark:bg-gray-800 dark:text-white dark:border-purple-500`}>
                 {repliedMessage.file && repliedMessage.file.type.startsWith('image') && (
                     <img
                         src={repliedMessage.file.content}
@@ -130,7 +128,7 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
     };
 
     return (
-        <div className={`flex w-full message mb-2 ${isSentByUser ? 'justify-end' : 'justify-start'} group gap-2 items-center`}>
+        <div id={id} className={`flex w-full message mb-2 ${isSentByUser ? 'justify-end' : 'justify-start'} group gap-2 items-center`}>
 
             {/* show the reply button to left if it's this user's message */}
             {isSentByUser && <button onClick={handleMessageReply} className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 hidden group-hover:flex dark:bg-gray-600 dark:hover:bg-gray-700">
@@ -156,7 +154,7 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                 {!isSentByUser && prevMessageSenderID !== message.senderID && activeChatInfo.type === 'group' && (
                     <div className="flex-shrink-0 m-2 ml-0">
                         <img
-                            src={contacts[message.senderID]?.profile}
+                            src={contacts[message.senderID]?.profile || '/images/user-profile.jpg'}
                             alt="ICON"
                             className="w-8 h-8 rounded-full"
                         />
@@ -213,44 +211,21 @@ const Message = ({ message, isSentByUser, prevMessageSenderID }) => {
                                     <img
                                         src={message.file.content}
                                         alt="Message media"
-                                        className="max-w-[250px] rounded-md border border-gray-300 mb-2 m-auto mt-8 dark:border-gray-600"
+                                        className="max-w-[250px] rounded-md border border-gray-300 m-auto mt-8 mb-10 dark:border-gray-600"
                                     />
-                                    <p className='text-sm'>Name: {message.file.name}</p>
-                                    <p className='text-sm'>Size: {formatBytes(message.file.size)}</p>
                                 </div>
                             )}
 
-                            {isPdfFile && <div className='flex flex-col items-start justify-between gap-1'>
-                                <FaFilePdf className='w-10 h-10 text-pink-600' />
+                           {isPdfFile || isAudioFile || isOtherFile || isVideoFile && <div className='flex flex-col items-start justify-between gap-4'>
+                                {isPdfFile && <FaFilePdf className='w-10 h-10 text-pink-600' />}
+                                {isAudioFile && <FaFileAudio className='w-10 h-10 text-blue-500' />}
+                                {isVideoFile &&  <FaVideo className='w-10 h-10 text-green-500' />}
+                                {isOtherFile && <AiOutlineFile className='w-10 h-10 text-yellow-500' />}
                                 <p className='text-sm'>Name: {message.file.name}</p>
                                 <p className='text-sm'>Size: {formatBytes(message.file.size)}</p>
                             </div>}
 
-                            {isAudioFile && (
-                                <div className='flex flex-col items-start justify-between gap-1'>
-                                    <FaFileAudio className='w-10 h-10 text-blue-500' />
-                                    <p className='text-sm'>Name: {message.file.name}</p>
-                                    <p className='text-sm'>Size: {formatBytes(message.file.size)}</p>
-                                </div>
-                            )}
-
-                            {isVideoFile && (
-                                <div className='flex flex-col items-start justify-between gap-1'>
-                                    <FaVideo className='w-10 h-10 text-green-500' />
-                                    <p className='text-sm'>Name: {message.file.name}</p>
-                                    <p className='text-sm'>Size: {formatBytes(message.file.size)}</p>
-                                </div>
-                            )}
-
-                            {isOtherFile && (
-                                <div className='flex flex-col items-start justify-between gap-1'>
-                                    <AiOutlineFile className='w-10 h-10 text-yellow-500' />
-                                    <p className='text-sm'>Name: {message.file.name}</p>
-                                    <p className='text-sm'>Size: {formatBytes(message.file.size)}</p>
-                                </div>
-                            )}
-
-                            {message.text && <div className="mb-4 text-left">
+                            {message.text && <div className="mb-4 text-left mt-4">
                                 <p className="text-sm font-semibold text-gray-800 mb-2 dark:text-white">Message:</p>
                                 <p className="bg-gray-100 text-gray-700 p-2 rounded-md break-words dark:bg-gray-700 dark:text-gray-300">{message.text}</p>
                             </div>}

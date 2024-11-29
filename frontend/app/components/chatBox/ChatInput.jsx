@@ -6,8 +6,18 @@ import { socketService } from '../socket/SocketService';
 import { v4 } from 'uuid';
 import {
     FaCheck, FaCheckDouble, FaRegClock, FaFilePdf, FaVideo, FaFileImage,
-    FaFileAudio, FaDownload, FaEye, FaReply
+    FaFileAudio, FaDownload, FaEye, FaReply,
+    FaAudible,
+    FaFile
 } from 'react-icons/fa';
+
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
+}
 
 const ChatInput = ({ activeChatID }) => {
     const [message, setMessage] = useState("");
@@ -190,10 +200,10 @@ const ChatInput = ({ activeChatID }) => {
         </div>
     )}
 
-    <form onSubmit={handleSendMessage} className="input-area flex border dark:border-gray-800 m-2 rounded-full gap-2 items-center p-2 ">
+    <form onSubmit={handleSendMessage} className="input-area flex border dark:border-gray-800 m-2 rounded-lg gap-2 items-center p-2 ">
         <label
             htmlFor="file-upload"
-            className="media-btn  bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950 rounded-full text-gray-800 dark:text-gray-200 hover:bg-blue-700 cursor-pointer flex justify-center items-center w-10 h-10"
+            className="media-btn  bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950 rounded-lg text-gray-800 dark:text-gray-200 hover:bg-blue-700 cursor-pointer flex justify-center items-center w-10 h-10"
         >
             <FiPaperclip size={18} color="white" />
         </label>
@@ -214,10 +224,14 @@ const ChatInput = ({ activeChatID }) => {
             rows={1}
             ref={textareaRef}
             className="flex-1 p-2 focus:outline-none h-auto resize-none overflow-y-scroll bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-            style={{ lineHeight: "1.5", minHeight: "40px" }} // Adjust styles as needed
+            style={{ lineHeight: "1.5", minHeight: "40px" }} 
+            onKeyDown={(e) => {
+                if(e.code == 'Enter' && e.shiftKey)
+                    handleSendMessage(e)
+            }}
         />
 
-        <button type="submit" className="send-btn bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950 hover:bg-blue-700 flex justify-center items-center text-white w-10 h-10 rounded-full">
+        <button type="submit" className="send-btn bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950 hover:bg-blue-700 flex justify-center items-center text-white w-10 h-10 rounded-lg">
             <FiSend size={18} />
         </button>
     </form>
@@ -240,25 +254,16 @@ const ChatInput = ({ activeChatID }) => {
                         <FiX size={20} />
                     </button>
                 </div>
-                <div className="mb-4">
+                <div className="mb-4 flex-col flex gap-4">
+                    <div >
+                        {selectedFile.type == 'application/pdf' && <FaFilePdf className='w-10 h-10 text-pink-600' />}
+                        {selectedFile.type.startsWith('audio') && <FaAudible className='w-10 h-10 text-blue-600' />}
+                        {selectedFile.type.startsWith('video') && <FaVideo className='w-10 h-10 text-green-600' />}
+                        {selectedFile.type == '' && <FaFile className='w-10 h-10 text-yellow-600' />}
+                    </div>
                     <p><strong>File Name:</strong> {selectedFile.name}</p>
-                    <p><strong>File Type:</strong> {selectedFile.type || "Unknown"}</p>
-                    <p><strong>File Size:</strong> {(selectedFile.size / 1024).toFixed(2)} KB</p>
+                    <p><strong>File Size:</strong> {formatBytes(selectedFile.size)}</p>
                 </div>
-                {/* File Preview Section */}
-                {filePreview ? (
-                    <div className="mb-4">
-                        <img src={filePreview} alt="file-preview" className="w-full h-40 object-cover rounded-md" />
-                    </div>
-                ) : selectedFile.type === 'application/pdf' ? (
-                    <div className="mb-4">
-                        <p className="text-gray-500 dark:text-gray-400">PDF Preview (Not supported in this view)</p>
-                    </div>
-                ) : (
-                    <div className="mb-4">
-                        <p className="text-gray-500 dark:text-gray-400">No preview available for this file type</p>
-                    </div>
-                )}
 
                 {/* Text field for file message */}
                 <div className="mb-4">

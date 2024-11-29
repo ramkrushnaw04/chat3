@@ -15,7 +15,7 @@ const SearchedUser = ({ users, searchQuery, onSelectUser }) => {
     return (
         <div className="mt-5 w-11/12 max-w-md overflow-y-scroll pb-20 rounded-md">
             {filteredUsers.length > 0 ? (
-                <ul className="bg-white shadow-md rounded-md dark:bg-gray-900 ">
+                <ul className="bg-white shadow-md rounded-md dark:bg-transparent ">
                     {filteredUsers.map(user => (
                         <li
                             key={user._id}

@@ -1,12 +1,14 @@
 "use client"
 
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/app/firebase/config";
+import { auth, provider } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { socketService } from "@/app/components/socket/SocketService";
 import { toast } from 'react-toastify';
 import axios from "axios";
+import { signInWithPopup } from "firebase/auth";
+import Image from "next/image";
 
 export default function LogIn() {
     const router = useRouter()
@@ -48,6 +50,20 @@ export default function LogIn() {
         logIn(email, password)
     }
 
+    function googleSignIn() {
+        signInWithPopup(auth, provider)
+            .then(data => {
+                const user = data.user
+                localStorage.setItem('chat3UserInfo', user)
+                // redirect to main page
+                router.push('/')
+            })
+            .catch((error) => {
+                console.error("Error logging in: ", error.message);
+                toast('Not signed in')
+            });
+    }
+
 
     return (
         isAppActive ? (
@@ -58,6 +74,10 @@ export default function LogIn() {
                     <input className="px-5 py-3 w-full bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white dark:border-none" name="password" type="password" placeholder="password" />
                     <button className="px-5 py-3 text-white rounded-lg bg-blue-700 dark:bg-blue-600" type="submit">Login</button>
                     <button onClick={() => router.push('/sign-up')} className="text-xs hover:text-blue-400 underline underline-offset-2 dark:hover:text-blue-300">Don&rsquo;t have an account? Sign up here.</button>
+                    <button className="w-full p-3 bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white flex justify-center items-center gap-3" onClick={googleSignIn}>
+                        <Image alt="google logo" width={20} height={20} src={'/images/search.png'} />
+                        <p>Continue with google</p>
+                    </button>
                 </form>
             </div>
         ) : (

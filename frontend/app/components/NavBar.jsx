@@ -49,7 +49,7 @@ const Navbar = () => {
                     onClick={() => router.push('/profile')}
                     className="rounded-lg focus:outline-none w-10">
                     <img 
-                        src={userInfo.profile || 'images/user-profile.avif'} 
+                        src={userInfo.profile || 'images/user-profile.jpg'} 
                         className="w-full h-full rounded-full" 
                         alt="User Profile"
                     />

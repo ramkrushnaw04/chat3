@@ -1,6 +1,6 @@
 "use client"
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "@/app/firebase/config";
+import { auth, provider } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import { socketService } from "../../components/socket/SocketService";
 import { useRef, useEffect, useState } from "react";
@@ -8,6 +8,8 @@ import { useDispatch } from "react-redux";
 import { setUserInfo } from "@/app/store/slices/userSlice";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { signInWithPopup } from "firebase/auth";
+import Image from "next/image";
 
 export default function SignUp() {
 
@@ -71,10 +73,42 @@ export default function SignUp() {
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setProfileImage(reader.result); // Set the base64 string for the image
+                setProfileImage(reader.result);
             };
-            reader.readAsDataURL(file); // Convert image to base64
+            reader.readAsDataURL(file); 
         }
+    }
+
+
+    function googleSignUp() {
+        signInWithPopup(auth, provider)
+        .then(async (userCredential) => {
+            const user = userCredential.user;
+
+            // Store the user in localStorage
+            localStorage.setItem('chat3UserInfo', JSON.stringify(user))
+
+            let [firstName, lastName] = user.displayName.split(" "); 
+            // Send data to backend to save
+            socket.current.emit('sign-up', { 
+                user,
+                firstName: firstName || '',
+                lastName: lastName || '',
+            }, (response) => {
+                if(response.status == 'duplicate') {
+                    toast('User already exists.')
+                    localStorage.removeItem('chat3UserInfo')
+                    return
+                }
+                dispatch(setUserInfo(response))
+                router.push('/')
+            });
+        })
+        .catch((error) => {
+            console.log(error)
+            console.error("Error signing up:", error.message);
+            toast.error(error.message)
+        });
     }
 
     return (
@@ -94,10 +128,11 @@ export default function SignUp() {
                     <input className="px-5 py-3 w-full bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white" name="password" type="password" placeholder="Password" required />
                     <button className="px-5 py-3 text-white rounded-lg bg-blue-700 dark:bg-blue-600" type="submit">Sign Up</button>
                     <button onClick={() => router.push('/log-in')} className="text-xs hover:text-blue-400 underline underline-offset-2 dark:hover:text-blue-300">Already have an account? Log in here.</button>
+                    <button className="w-full p-3 bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white flex justify-center items-center gap-3" onClick={googleSignUp}>
+                        <Image alt="google logo" width={20} height={20} src={'/images/search.png'} />
+                        <p>Continue with google</p>
+                    </button>
                 </form>
-                <div className="fixed bottom-0 right-0">
-                    {/* Additional content can go here */}
-                </div>
             </div>
         ) : (
             <div className="fixed inset-0 flex items-center justify-center bg-gray-100 z-50 dark:bg-gray-900">

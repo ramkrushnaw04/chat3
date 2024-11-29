@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AiOutlineTeam } from 'react-icons/ai';
-import { FaCheck, FaCheckDouble, FaRegClock, FaFilePdf, FaVideo, FaFileImage, FaFileAudio } from 'react-icons/fa';
+import { FaCheck, FaCheckDouble, FaRegClock, FaFilePdf, FaVideo, FaFileImage, FaFileAudio, FaFile } from 'react-icons/fa';
 
 const ChatsItem = ({ data, isOnline, onClick }) => {
     const storedMessages = useSelector((state) => state.messages);
@@ -36,6 +36,7 @@ const ChatsItem = ({ data, isOnline, onClick }) => {
         if (type === 'application/pdf') return <FaFilePdf className="text-white dark:text-gray-300" />;
         if (type.startsWith('audio')) return <FaFileAudio className="text-white dark:text-gray-300" />;
         if (type.startsWith('video')) return <FaVideo className="text-white dark:text-gray-300" />;
+        if (type == '') return <FaFile className="text-white dark:text-gray-300" />;
     };
 
     useEffect(() => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import Message from '../Message';
 import AlertMessage from '../AlertMessage';
@@ -8,28 +8,40 @@ const ChatMessages = ({ messages }) => {
     const userInfo = useSelector((state) => state.user.userInfo);
     const activeChatInfo = useSelector((state) => state.activeChat);
     const noOfMembers = activeChatInfo.members.length;
+    const noOfMessages = messages.length
+    const lastMessage = useRef(null)
 
     function formatTime(epochTime) {
         const date = new Date(epochTime);
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
     }
 
+    useEffect(() => {
+        if (!document.getElementById('lastMessage')) return
+        document.getElementById('lastMessage').scrollIntoView({ behavior: "smooth", block: "center" })
+    }, [messages])
+
+
     return messages && messages.length > 0 ? (
         <div className="messages flex-1 p-4 overflow-y-auto">
             {messages.map((msg, index) => {
                 // Update message status to "read" if it meets the condition
                 if (msg.readBy.length >= noOfMembers - 1) msg = { ...msg, status: 'read' };
+                const id = index == messages.length - 1 ? 'lastMessage' : ''
 
                 if (msg.type === 'alert') {
-                    return <AlertMessage key={index} text={msg.text} />;
+                    return <AlertMessage id={id} key={index} text={msg.text} />;
+
                 }
 
                 return !msg.deleated ? (
                     <Message
+                        id={id}
                         key={index}
                         message={msg}
                         isSentByUser={msg.senderID === userInfo._id}
                         prevMessageSenderID={index > 0 ? messages[index - 1].senderID : null}
+                        ref={noOfMessages == index ? lastMessage : null}
                     />
                 ) : (
                     <div
@@ -39,8 +51,8 @@ const ChatMessages = ({ messages }) => {
                     >
                         <div
                             className={`max-w-[90%] ${msg.senderID === userInfo._id
-                                    ? 'bg-blue-500 text-white dark:bg-blue-950 dark:text-white'
-                                    : 'bg-gray-200 text-black dark:bg-gray-800 dark:text-white'
+                                ? 'bg-blue-500 text-white dark:bg-blue-950 dark:text-white'
+                                : 'bg-gray-200 text-black dark:bg-gray-800 dark:text-white'
                                 } p-2 rounded-md flex flex-col gap-2`}
                         >
                             <div className="flex gap-2 items-center">

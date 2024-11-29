@@ -8,7 +8,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import Navbar from '../components/NavBar';
 import { setUserInfo } from '../store/slices/userSlice';
 import { socketService } from '../components/socket/SocketService';
-import { FaSignOutAlt, FaUser } from "react-icons/fa";
 import axios from 'axios';
 import { signOut } from 'firebase/auth';
 import { FiX } from 'react-icons/fi';
@@ -108,7 +107,7 @@ const Profile = () => {
     const toggleDarkMode = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
     return isAppActive ? (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col">
+        <div className="h-100svh bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col">
             <Navbar />
             <div className="flex flex-col items-center justify-center mt-12">
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-11/12 max-w-96 p-8 flex flex-col items-center">
@@ -120,7 +119,7 @@ const Profile = () => {
                             <img
                                 src={userInfo.profile || "images/user-profile.jpg"}
                                 alt={`${userInfo.firstName} ${userInfo.lastName}`}
-                                className="w-36 h-36 rounded-full mb-6 shadow-lg"
+                                className="w-36 h-36 rounded-xl mb-6 shadow-lg"
                             />
                             <h2 className="text-xl font-semibold mb-1">
                                 {userInfo.firstName} {userInfo.lastName}
@@ -202,7 +201,7 @@ const Profile = () => {
                                     <img
                                         src={previewImage || "images/user-profile.jpg"}
                                         alt="Profile Picker"
-                                        className="w-24 h-24 rounded-full mt-4 shadow-md hover:opacity-75 transition duration-200"
+                                        className="w-24 h-24 rounded-xl mt-4 shadow-md hover:opacity-75 transition duration-200"
                                     />
                                 </label>
                                 <input
