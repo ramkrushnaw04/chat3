@@ -53,9 +53,8 @@ export default function SignUp() {
                 });
             })
             .catch((error) => {
-                console.log(error)
                 console.error("Error signing up:", error.message);
-                toast.error(error.message)
+                // toast.error(error.message)
             });
     };
 
