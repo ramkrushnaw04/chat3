@@ -241,7 +241,7 @@ const Message = ({ id, message, isSentByUser, prevMessageSenderID, ref }) => {
                                     {readByUsers.map((user) => (
                                         <div key={user._id} className="flex items-center mb-2 space-x-2 p-3 bg-gray-200 rounded-md dark:bg-gray-700 dark:text-white">
                                             <img
-                                                src={user.profile}
+                                                src={user.profile || 'images/user-profile.jpg'}
                                                 alt={user.firstName}
                                                 className="w-8 h-8 rounded-full"
                                             />
@@ -259,7 +259,7 @@ const Message = ({ id, message, isSentByUser, prevMessageSenderID, ref }) => {
                                     {notReadByUsers.map((user) => (
                                         <div key={user._id} className="flex items-center mb-2 space-x-2 bg-gray-200 p-3 rounded-md dark:bg-gray-700 dark:text-white">
                                             <img
-                                                src={user.profile}
+                                                src={user.profile || 'images/user-profile.jpg'}
                                                 alt={user.firstName}
                                                 className="w-8 h-8 rounded-full"
                                             />

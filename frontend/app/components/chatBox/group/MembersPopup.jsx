@@ -4,7 +4,6 @@ import React, { useRef, useEffect, useState } from 'react';
 import { AiOutlineClose, AiOutlineUserAdd, AiOutlineLogout } from 'react-icons/ai';
 import { useSelector } from 'react-redux';
 import { socketService } from '../../socket/SocketService';
-import { confirmPasswordReset } from 'firebase/auth';
 import SearchedUser from '../../addChat/SearchedUser';
 
 const MembersPopup = ({
