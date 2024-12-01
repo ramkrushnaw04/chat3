@@ -18,6 +18,7 @@ export default function SignUp() {
     const dispatch = useDispatch()
     const [profileImage, setProfileImage] = useState(null)
     const [isAppActive, setIsAppActive] = useState(false)
+    const isRequestSent = useRef(false)
 
     useEffect(() => {
         socketService.connect()
@@ -33,6 +34,10 @@ export default function SignUp() {
     
     // Sign up
     const signUp = async (email, password, firstName, lastName, profileImage) => {
+        if (isRequestSent.current) {
+            return
+        }
+
         createUserWithEmailAndPassword(auth, email, password)
             .then(async (userCredential) => {
                 const user = userCredential.user;
@@ -51,9 +56,11 @@ export default function SignUp() {
                     dispatch(setUserInfo(response))
                     router.push('/')
                 });
+                isRequestSent.current = true
             })
             .catch((error) => {
                 console.error("Error signing up:", error.message);
+                isRequestSent.current = false
                 // toast.error(error.message)
             });
     };

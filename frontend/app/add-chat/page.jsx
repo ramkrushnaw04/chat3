@@ -66,7 +66,7 @@ export default function Chats() {
                 toast.error(response.message)
             }
         })
-        isRequestSent.current = false
+        isRequestSent.current = true
     };
 
     return (

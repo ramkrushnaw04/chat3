@@ -34,7 +34,6 @@ export default function LogIn() {
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 const user = userCredential.user;
-                console.log(user)
                 localStorage.setItem('chat3UserInfo', user)
                 // redirect to main page
                 router.push('/')
