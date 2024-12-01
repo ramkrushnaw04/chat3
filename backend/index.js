@@ -247,7 +247,7 @@ io.on('connection', socket => {
 
                 // get last online time of the user
                 const time = await LastOnlineUser.find({ userID: data.userID })
-                socket.to(roomName).emit('user-online', { userID: data.userID, lastOnline: time[0].lastOnline })
+                socket.to(roomName).emit('user-online', { userID: data.userID, lastOnline: time[0]?.lastOnline })
             });
             callback(searchedGroups);
         } catch (e) {
