@@ -74,7 +74,7 @@ io.on('connection', socket => {
                 authID: data.user.uid,
                 firstName: data.firstName,
                 lastName: data.lastName,
-                profile: data.user.photoURL,
+                profile: data.profileImage || data.user.photoURL || "/images/user-profile.jpg",
                 email: data.user.email,
             });
             const lastOnline = new LastOnlineUser({
@@ -446,7 +446,7 @@ io.on('connection', socket => {
         }
     })
 
-    socket.on('edit-group', async (data) => {
+    socket.on('edit-group', async (data, callback) => {
         try {
             await GroupChat.findByIdAndUpdate(
                 data.chatID,
@@ -466,8 +466,10 @@ io.on('connection', socket => {
 
             io.to(data.chatID).emit('edit-group', { ...data, chatID: data.chatID })
             io.to(data.chatID).emit('message', message)
+            if (callback) callback({ success: true })
         } catch (e) {
             console.log("error 'edit-group': ", e.message)
+            if (callback) callback({ success: false })
         }
     })
 

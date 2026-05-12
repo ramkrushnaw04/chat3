@@ -22,6 +22,8 @@ const MembersPopup = ({
     const [groupName, setGroupName] = useState(groupInfo.name || "");
     const [groupDescription, setGroupDescription] = useState(groupInfo.description || "");
     const [groupImage, setGroupImage] = useState(groupInfo.profile || "");
+    const [isSaving, setIsSaving] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
     const socket = useRef(null);
 
     const allMembers = [
@@ -36,8 +38,10 @@ const MembersPopup = ({
 
     useEffect(() => {
         if (showUserList && searchQuery) {
+            setIsSearching(true)
             socket.current.emit('get-users-from-query', { query: searchQuery }, (response) => {
                 setUserList(response);
+                setIsSearching(false)
             });
         }
     }, [searchQuery, showUserList]);
@@ -56,6 +60,7 @@ const MembersPopup = ({
     };
 
     const handleSaveChanges = () => {
+        setIsSaving(true);
         // Emit updated group info to the server
         socket.current.emit("edit-group", {
             chatID: groupInfo.chatID,
@@ -63,8 +68,10 @@ const MembersPopup = ({
             description: groupDescription,
             profile: groupImage,
             editorName: userInfo.firstName + ' ' + userInfo.lastName
+        }, () => {
+            setIsSaving(false);
+            setIsEditing(false);
         });
-        setIsEditing(false);
     };
 
     const handleImageChange = (e) => {
@@ -108,7 +115,7 @@ const MembersPopup = ({
                         <div className="flex flex-col items-center mb-4">
                             <label className="w-20 h-20 rounded-full overflow-hidden border cursor-pointer">
                                 <img
-                                    src={groupImage || "images/group-profile.svg"}
+                                    src={groupImage || "/images/group-profile.svg"}
                                     alt="Group"
                                     className="w-full h-full object-cover"
                                 />
@@ -135,10 +142,11 @@ const MembersPopup = ({
                             onChange={(e) => setGroupDescription(e.target.value)}
                         />
                         <button
+                            disabled={isSaving}
                             onClick={handleSaveChanges}
-                            className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-600"
+                            className={`w-full text-white py-2 px-4 rounded-lg flex items-center justify-center min-w-24 transition duration-200 ${isSaving ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-600'}`}
                         >
-                            Save Changes
+                            {isSaving ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : "Save Changes"}
                         </button>
                     </div>
                 )}
@@ -156,7 +164,7 @@ const MembersPopup = ({
                             placeholder='Search user'
                         />
 
-                        <SearchedUser users={userList} searchQuery={searchQuery} onSelectUser={handleUserSelect} />
+                        <SearchedUser users={userList} searchQuery={searchQuery} onSelectUser={handleUserSelect} isLoading={isSearching} />
                     </div>
                 }
 
@@ -178,7 +186,7 @@ const MembersPopup = ({
                             <div className="flex flex-col items-center mb-8">
                                 <img
                                     className="w-14 h-14 rounded-full"
-                                    src={groupInfo.profile || "images/group-profile.svg"}
+                                    src={groupInfo.profile || "/images/group-profile.svg"}
                                     alt="Group Icon"
                                 />
                                 <h2 className="text-lg font-semibold">{groupInfo.name}</h2>
@@ -196,7 +204,7 @@ const MembersPopup = ({
                                             >
                                                 <div className="relative mr-4">
                                                     <img
-                                                        src={user.profile || "images/user-profile.jpg"}
+                                                        src={user.profile || "/images/user-profile.jpg"}
                                                         alt={user.firstName}
                                                         className="w-10 h-10 rounded-full"
                                                     />

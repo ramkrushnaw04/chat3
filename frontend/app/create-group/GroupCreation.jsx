@@ -13,6 +13,7 @@ export default function GroupCreation({ selectedUsers, onBack }) {
     const [imagePreview, setImagePreview] = useState(null);
     const socket = useRef(null)
     const userInfo = useSelector((state) => state.user.userInfo)
+    const [isCreating, setIsCreating] = useState(false)
     const isRequestSent = useRef(false)
 
     useEffect(() => {
@@ -42,6 +43,7 @@ export default function GroupCreation({ selectedUsers, onBack }) {
 
         const userIDs = selectedUsers.map(user => user._id);
         userIDs.push(userInfo._id)
+        setIsCreating(true)
         socket.current.emit('create-chat', {
             name: groupName,
             profile: imagePreview,
@@ -55,6 +57,9 @@ export default function GroupCreation({ selectedUsers, onBack }) {
                 setImagePreview(null)
                 setGroupDescription('')
                 router.push('/')
+            } else {
+                setIsCreating(false)
+                isRequestSent.current = false
             }
         })
         isRequestSent.current = true
@@ -132,10 +137,10 @@ export default function GroupCreation({ selectedUsers, onBack }) {
 
             <button
                 onClick={handleCreateGroup}
-                disabled={!groupName || selectedUsers.length === 0}
-                className={`absolute bottom-6 w-11/12 max-w-md px-6 py-2 font-semibold rounded-md transition duration-200 ${groupName && selectedUsers.length > 0 ? "bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700" : "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"}`}
+                disabled={!groupName || selectedUsers.length === 0 || isCreating}
+                className={`absolute bottom-6 w-11/12 max-w-md px-6 py-2 font-semibold rounded-md transition duration-200 flex justify-center items-center ${groupName && selectedUsers.length > 0 && !isCreating ? "bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700" : "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"}`}
             >
-                Create Group
+                {isCreating ? <div className="w-5 h-5 border-2 border-gray-600 dark:border-white border-t-transparent rounded-full animate-spin"></div> : "Create Group"}
             </button>
         </div>
 

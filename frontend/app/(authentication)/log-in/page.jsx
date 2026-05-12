@@ -14,6 +14,7 @@ export default function LogIn() {
     const router = useRouter()
     const socket = useRef(null)
     const [isAppActive, setIsAppActive] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
         socketService.connect()
@@ -30,17 +31,19 @@ export default function LogIn() {
 
     // Log in
     const logIn = (email, password) => {
-        if(!email || !password) return
+        if (!email || !password) return
+        setIsLoading(true)
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 const user = userCredential.user;
-                localStorage.setItem('chat3UserInfo', user)
+                localStorage.setItem('chat3UserInfo', JSON.stringify(user))
                 // redirect to main page
                 router.push('/')
             })
             .catch((error) => {
                 console.error("Error logging in: ", error.message);
                 toast('Invalid credentials')
+                setIsLoading(false)
             });
     };
 
@@ -52,16 +55,36 @@ export default function LogIn() {
     }
 
     function googleSignIn() {
+        setIsLoading(true)
         signInWithPopup(auth, provider)
             .then(data => {
                 const user = data.user
-                localStorage.setItem('chat3UserInfo', user)
-                // redirect to main page
-                router.push('/')
+                
+                socket.current.emit(
+                    'get-user-info-form-authID',
+                    { authID: user.uid },
+                    (response) => {
+                        if (response) {
+                            localStorage.setItem('chat3UserInfo', JSON.stringify(user))
+                            router.push('/')
+                        } else {
+                            let [firstName, lastName] = (user.displayName || "Unknown User").split(" "); 
+                            socket.current.emit('sign-up', { 
+                                user,
+                                firstName: firstName || '',
+                                lastName: lastName || '',
+                            }, (signUpRes) => {
+                                localStorage.setItem('chat3UserInfo', JSON.stringify(user))
+                                router.push('/')
+                            });
+                        }
+                    }
+                );
             })
             .catch((error) => {
                 console.error("Error logging in: ", error.message);
                 toast('Not signed in')
+                setIsLoading(false)
             });
     }
 
@@ -73,11 +96,17 @@ export default function LogIn() {
                     <h1 className="font-bold text-xl">Login</h1>
                     <input className="px-5 py-3 w-full bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white dark:border-none" name="email" type="email" placeholder="email" />
                     <input className="px-5 py-3 w-full bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white dark:border-none" name="password" type="password" placeholder="password" />
-                    <button className="px-5 py-3 text-white rounded-lg bg-blue-700 dark:bg-blue-600" type="submit">Login</button>
-                    <button onClick={() => router.push('/sign-up')} className="text-xs hover:text-blue-400 underline underline-offset-2 dark:hover:text-blue-300">Don&rsquo;t have an account? Sign up here.</button>
-                    <button className="w-full p-3 bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white flex justify-center items-center gap-3" onClick={googleSignIn}>
-                        <Image alt="google logo" width={20} height={20} src={'/images/search.png'} />
-                        <p>Continue with google</p>
+                    <button disabled={isLoading} className="px-5 py-3 text-white rounded-lg bg-blue-700 dark:bg-blue-600 disabled:opacity-50 flex items-center justify-center min-w-24" type="submit">
+                        {isLoading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : "Login"}
+                    </button>
+                    <button type="button" onClick={() => router.push('/sign-up')} className="text-xs hover:text-blue-400 underline underline-offset-2 dark:hover:text-blue-300">Don&rsquo;t have an account? Sign up here.</button>
+                    <button disabled={isLoading} type="button" className="w-full p-3 bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white flex justify-center items-center gap-3 disabled:opacity-50" onClick={googleSignIn}>
+                        {isLoading ? <div className="w-5 h-5 border-2 border-gray-600 dark:border-white border-t-transparent rounded-full animate-spin"></div> : (
+                            <>
+                                <Image alt="google logo" width={20} height={20} src={'/images/search.png'} />
+                                <p>Continue with google</p>
+                            </>
+                        )}
                     </button>
                 </form>
             </div>
@@ -88,7 +117,7 @@ export default function LogIn() {
                     <p className="text-lg font-semibold text-gray-600 dark:text-gray-300">Connecting to the server...</p>
                 </div>
             </div>
-        )        
+        )
 
     )
 }

@@ -26,13 +26,34 @@ function ThemedToastContainer() {
   return <ToastContainer position="bottom-right" theme={theme === "dark" ? "dark" : "light"} />;
 }
 
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { setUserInfo } from "./store/slices/userSlice";
+
+function AppInitializer({ children }) {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const storedUser = localStorage.getItem("chat3UserInfo");
+    if (storedUser) {
+      try {
+        dispatch(setUserInfo(JSON.parse(storedUser)));
+      } catch (e) {
+        console.error("Failed to parse user info", e);
+      }
+    }
+  }, [dispatch]);
+  return <>{children}</>;
+}
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class">
           <Provider store={store}>
-            {children}
+            <AppInitializer>
+              {children}
+            </AppInitializer>
             <ThemedToastContainer />
           </Provider>
         </ThemeProvider>

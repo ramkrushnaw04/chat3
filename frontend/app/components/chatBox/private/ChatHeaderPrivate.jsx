@@ -120,7 +120,7 @@ const ChatHeaderPrivate = ({ data, activeChatHandler }) => {
                     </button>
                 )}
                 <div className="relative mr-4">
-                    <img src={otherUserInfo?.profile || "images/user-profile.jpg"} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
+                    <img src={otherUserInfo?.profile || "/images/user-profile.jpg"} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
                     <span
                         className={`absolute border-2 border-white right-[-2px] bottom-[-2px] w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}
                     />
@@ -143,7 +143,7 @@ const ChatHeaderPrivate = ({ data, activeChatHandler }) => {
                         </button>
                         <div className="flex flex-col items-center">
                             <img
-                                src={otherUserInfo?.profile || "images/user-profile.jpg"}
+                                src={otherUserInfo?.profile || "/images/user-profile.jpg"}
                                 alt="Profile"
                                 className="w-20 h-20 rounded-full object-cover mb-4"
                             />

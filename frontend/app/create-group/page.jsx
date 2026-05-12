@@ -18,6 +18,7 @@ export default function Page() {
     const socket = useRef(null);
     const [userList, setUserList] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [isSearching, setIsSearching] = useState(false);
     const userInfo = useSelector((state) => state.user.userInfo);
     let [user] = useAuthState(auth);
 
@@ -35,8 +36,10 @@ export default function Page() {
     }, []);
 
     useEffect(() => {
+        setIsSearching(true)
         socket.current.emit('get-users-from-query', { query: searchQuery || "" }, (response) => {
             setUserList(response);
+            setIsSearching(false)
         });
     }, [searchQuery]);
 
@@ -141,7 +144,7 @@ export default function Page() {
                     </div>
 
                     {/* Show all users or filtered users */}
-                    <SearchedUser users={userList} searchQuery={searchQuery} onSelectUser={handleUserSelect} />
+                    <SearchedUser users={userList} searchQuery={searchQuery} onSelectUser={handleUserSelect} isLoading={isSearching} />
 
                     {/* Proceed Button */}
                     <button

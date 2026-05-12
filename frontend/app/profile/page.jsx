@@ -29,6 +29,7 @@ const Profile = () => {
     });
     const [previewImage, setPreviewImage] = useState('');
     const [isAppActive, setIsAppActive] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const { theme, setTheme } = useTheme();
 
     useEffect(() => {
@@ -91,6 +92,7 @@ const Profile = () => {
 
     const handleSave = () => {
         if (socket.current) {
+            setIsSaving(true);
             socket.current.emit('update-user-info', { _id: userInfo._id, update: formData }, (response) => {
                 if(response.success) {
                     dispatch(setUserInfo(response.newUser));
@@ -100,6 +102,7 @@ const Profile = () => {
                 } else {
                     toast.error(response.message)
                 }
+                setIsSaving(false);
             });
         }
     };
@@ -117,7 +120,7 @@ const Profile = () => {
                     {userInfo && (
                         <>
                             <img
-                                src={userInfo.profile || "images/user-profile.jpg"}
+                                src={userInfo.profile || "/images/user-profile.jpg"}
                                 alt={`${userInfo.firstName} ${userInfo.lastName}`}
                                 className="w-36 h-36 rounded-xl mb-6 shadow-lg"
                             />
@@ -199,7 +202,7 @@ const Profile = () => {
                             <div className="flex flex-col items-center">
                                 <label htmlFor="profile" className="cursor-pointer">
                                     <img
-                                        src={previewImage || "images/user-profile.jpg"}
+                                        src={previewImage || "/images/user-profile.jpg"}
                                         alt="Profile Picker"
                                         className="w-24 h-24 rounded-xl mt-4 shadow-md hover:opacity-75 transition duration-200"
                                     />
@@ -221,10 +224,11 @@ const Profile = () => {
                                 Cancel
                             </button>
                             <button
-                                className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 transition"
+                                disabled={isSaving}
+                                className={`px-4 py-2 text-white rounded-lg shadow transition flex items-center justify-center min-w-24 ${isSaving ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'}`}
                                 onClick={handleSave}
                             >
-                                Save
+                                {isSaving ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : "Save"}
                             </button>
                         </div>
                     </div>

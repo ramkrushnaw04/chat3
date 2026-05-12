@@ -18,6 +18,7 @@ export default function Chats() {
     const socket = useRef(null);
     const [userList, setUserList] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [isSearching, setIsSearching] = useState(false);
     const userInfo = useSelector((state) => state.user.userInfo)
     const isRequestSent = useRef(false)
 
@@ -28,8 +29,10 @@ export default function Chats() {
 
 
     useEffect(() => {
+        setIsSearching(true)
         socket.current.emit('get-users-from-query', { query: searchQuery }, (response) => {
             setUserList(response)
+            setIsSearching(false)
         })
     }, [searchQuery])
 
@@ -83,7 +86,7 @@ export default function Chats() {
                 />
             </div>
 
-            <SearchedUser users={userList} searchQuery={searchQuery} onSelectUser={handleUserSelect} />
+            <SearchedUser users={userList} searchQuery={searchQuery} onSelectUser={handleUserSelect} isLoading={isSearching} />
         </div>
 
     );

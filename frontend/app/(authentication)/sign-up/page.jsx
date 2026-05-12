@@ -18,6 +18,7 @@ export default function SignUp() {
     const dispatch = useDispatch()
     const [profileImage, setProfileImage] = useState(null)
     const [isAppActive, setIsAppActive] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
     const isRequestSent = useRef(false)
 
     useEffect(() => {
@@ -31,12 +32,13 @@ export default function SignUp() {
                 setIsAppActive(true)
             })
     }, [])
-    
+
     // Sign up
     const signUp = async (email, password, firstName, lastName, profileImage) => {
         if (isRequestSent.current) {
             return
         }
+        setIsLoading(true)
 
         createUserWithEmailAndPassword(auth, email, password)
             .then(async (userCredential) => {
@@ -61,6 +63,7 @@ export default function SignUp() {
             .catch((error) => {
                 console.error("Error signing up:", error.message);
                 isRequestSent.current = false
+                setIsLoading(false)
                 // toast.error(error.message)
             });
     };
@@ -71,7 +74,7 @@ export default function SignUp() {
         const password = e.target.password.value
         const firstName = e.target.firstName.value
         const lastName = e.target.lastName.value
-        signUp(email, password, firstName, lastName, profileImage) 
+        signUp(email, password, firstName, lastName, profileImage)
     }
 
     function handleImageChange(e) {
@@ -81,40 +84,42 @@ export default function SignUp() {
             reader.onloadend = () => {
                 setProfileImage(reader.result);
             };
-            reader.readAsDataURL(file); 
+            reader.readAsDataURL(file);
         }
     }
 
 
     function googleSignUp() {
+        setIsLoading(true)
         signInWithPopup(auth, provider)
-        .then(async (userCredential) => {
-            const user = userCredential.user;
+            .then(async (userCredential) => {
+                const user = userCredential.user;
 
-            // Store the user in localStorage
-            localStorage.setItem('chat3UserInfo', JSON.stringify(user))
+                // Store the user in localStorage
+                localStorage.setItem('chat3UserInfo', JSON.stringify(user))
 
-            let [firstName, lastName] = user.displayName.split(" "); 
-            // Send data to backend to save
-            socket.current.emit('sign-up', { 
-                user,
-                firstName: firstName || '',
-                lastName: lastName || '',
-            }, (response) => {
-                if(response.status == 'duplicate') {
-                    toast('User already exists.')
-                    localStorage.removeItem('chat3UserInfo')
-                    return
-                }
-                dispatch(setUserInfo(response))
-                router.push('/')
+                let [firstName, lastName] = user.displayName.split(" ");
+                // Send data to backend to save
+                socket.current.emit('sign-up', {
+                    user,
+                    firstName: firstName || '',
+                    lastName: lastName || '',
+                }, (response) => {
+                    if (response.status == 'duplicate') {
+                        // User already exists, just log them in instead of throwing an error!
+                        router.push('/')
+                        return
+                    }
+                    dispatch(setUserInfo(response))
+                    router.push('/')
+                });
+            })
+            .catch((error) => {
+                console.log(error)
+                console.error("Error signing up:", error.message);
+                toast.error(error.message)
+                setIsLoading(false)
             });
-        })
-        .catch((error) => {
-            console.log(error)
-            console.error("Error signing up:", error.message);
-            toast.error(error.message)
-        });
     }
 
     return (
@@ -125,18 +130,24 @@ export default function SignUp() {
                     <div className="w-32 h-32 my-5">
                         <input id="profileSelector" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                         <label htmlFor="profileSelector">
-                            <img src={profileImage || "images/user-profile.jpg"} className="w-full h-full border-gray-200 border-2 rounded-3xl cursor-pointer dark:border-gray-600" alt="Profile" />
+                            <img src={profileImage || "/images/user-profile.jpg"} className="w-full h-full border-gray-200 border-2 rounded-3xl cursor-pointer dark:border-gray-600" alt="Profile" />
                         </label>
                     </div>
                     <input className="px-5 py-3 w-full bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white" name="firstName" type="text" placeholder="First Name" required />
                     <input className="px-5 py-3 w-full bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white" name="lastName" type="text" placeholder="Last Name" required />
                     <input className="px-5 py-3 w-full bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white" name="email" type="email" placeholder="Email" required />
                     <input className="px-5 py-3 w-full bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white" name="password" type="password" placeholder="Password" required />
-                    <button className="px-5 py-3 text-white rounded-lg bg-blue-700 dark:bg-blue-600" type="submit">Sign Up</button>
-                    <button onClick={() => router.push('/log-in')} className="text-xs hover:text-blue-400 underline underline-offset-2 dark:hover:text-blue-300">Already have an account? Log in here.</button>
-                    <button className="w-full p-3 bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white flex justify-center items-center gap-3" onClick={googleSignUp}>
-                        <Image alt="google logo" width={20} height={20} src={'/images/search.png'} />
-                        <p>Continue with google</p>
+                    <button disabled={isLoading} className="px-5 py-3 text-white rounded-lg bg-blue-700 dark:bg-blue-600 disabled:opacity-50 flex items-center justify-center min-w-24" type="submit">
+                        {isLoading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : "Sign Up"}
+                    </button>
+                    <button type="button" onClick={() => router.push('/log-in')} className="text-xs hover:text-blue-400 underline underline-offset-2 dark:hover:text-blue-300">Already have an account? Log in here.</button>
+                    <button disabled={isLoading} type="button" className="w-full p-3 bg-gray-300 rounded-lg dark:bg-gray-700 dark:text-white flex justify-center items-center gap-3 disabled:opacity-50" onClick={googleSignUp}>
+                        {isLoading ? <div className="w-5 h-5 border-2 border-gray-600 dark:border-white border-t-transparent rounded-full animate-spin"></div> : (
+                            <>
+                                <Image alt="google logo" width={20} height={20} src={'/images/search.png'} />
+                                <p>Continue with google</p>
+                            </>
+                        )}
                     </button>
                 </form>
             </div>
@@ -148,7 +159,7 @@ export default function SignUp() {
                 </div>
             </div>
         )
-        
+
 
     )
 }

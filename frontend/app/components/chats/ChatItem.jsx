@@ -64,7 +64,7 @@ const ChatsItem = ({ data, isOnline, onClick }) => {
             <div className="flex items-center w-full">
                 <div className="relative">
                     <img
-                        src={data.profile || (data.type === 'private' ? "images/user-profile.jpg" : "images/group-profile.svg")}
+                        src={data.profile || (data.type === 'private' ? "/images/user-profile.jpg" : "/images/group-profile.svg")}
                         className="w-10 h-10 rounded-full object-cover"
                     />
                 </div>

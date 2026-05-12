@@ -16,6 +16,7 @@ const Chats = ({ style, activeChatHandler }) => {
     const socket = useRef();
     const userInfo = useSelector((state) => state.user.userInfo);
     const [chats, setChats] = useState([]);
+    const [isLoadingChats, setIsLoadingChats] = useState(true);
     const [showOptions, setShowOptions] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const router = useRouter();
@@ -90,6 +91,7 @@ const Chats = ({ style, activeChatHandler }) => {
             socket.current.emit('get-last-online-statuses', { userIDs }, (response) => {
                 dispatch(setLastOnlineStatuses(response))
             })
+            setIsLoadingChats(false)
         });
     }, [userInfo]);
 
@@ -379,7 +381,11 @@ const Chats = ({ style, activeChatHandler }) => {
             )}
 
             <div className="px-4 gap-3 flex flex-col overflow-y-scroll flex-1 pb-20">
-                {userInfo && filteredChats.length > 0 ? (
+                {isLoadingChats ? (
+                    <div className="flex items-center justify-center h-full w-full">
+                        <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                    </div>
+                ) : userInfo && filteredChats.length > 0 ? (
                     filteredChats.map((chat) => (
                         <ChatsItem
                             key={chat.chatID}

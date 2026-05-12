@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 
-const SearchedUser = ({ users, searchQuery, onSelectUser }) => {
+const SearchedUser = ({ users, searchQuery, onSelectUser, isLoading }) => {
     const userInfo = useSelector((state) => state.user.userInfo)
 
     const filteredUsers =
@@ -14,7 +14,11 @@ const SearchedUser = ({ users, searchQuery, onSelectUser }) => {
 
     return (
         <div className="mt-5 w-11/12 max-w-md overflow-y-scroll pb-20 rounded-md">
-            {filteredUsers.length > 0 ? (
+            {isLoading ? (
+                <div className="flex items-center justify-center py-10">
+                    <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                </div>
+            ) : filteredUsers.length > 0 ? (
                 <ul className="bg-white shadow-md rounded-md dark:bg-transparent ">
                     {filteredUsers.map(user => (
                         <li
@@ -23,7 +27,7 @@ const SearchedUser = ({ users, searchQuery, onSelectUser }) => {
                             onClick={() => onSelectUser(user)}
                         >
                             <img
-                                src={user.profile == '' || !user.profile ? "images/user-profile.jpg" : user.profile}
+                                src={user.profile == '' || !user.profile ? "/images/user-profile.jpg" : user.profile}
                                 alt={`${user.firstName} ${user.lastName}`}
                                 className="w-12 h-12 rounded-full mr-4"
                             />
